@@ -1,10 +1,28 @@
 #!usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# @Time    : 2017/10/20 下午3:07
+# @Author  : LeonHardt
+# @File    : train_test_preparation.py
+
+"""
+Function: Extract features from standard data. 8 features from every sensors, the total number is 128.
+
+Data_From: ./Dendrobium_Standard_Data/*.txt
+Save_To: .//Dendrobium_Feature_Data/*.cvs
+Feature_Structure:
+------------------------------
+         'F_max', 'F_int', 'SR_1_max', 'SR_1_min', 'SR_10_max', 'SR_10_min', 'SR_100_max', 'SR_100_min'
+Sensor 1
+Sensor 2
+'''
+Sensor 16
+------------------------------
+"""
 
 import os
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import glob
 
 '''
@@ -21,7 +39,7 @@ OPTION_SR = 1000
 Get the direction and the text-name list
 '''
 data_dir = os.getcwd()
-file_name_list = glob.glob(data_dir + '/Dendrobium_Original_Data' + '/*.txt')
+file_name_list = glob.glob(data_dir + '/Dendrobium_Standard_Data/' + '*.txt')
 
 '''
 Get the data, extract the 33800 data we will analysis,and sort them as the name of the sensors.
@@ -57,49 +75,47 @@ for txt_name in file_name_list:
 
     df_data_standard *= 1000
 
-    data_feature['F_max'] = df_data_standard.max(axis=0)         # The maximum value
+    data_feature['F_max'] = df_data_standard.max(axis=0)  # The maximum value
 
-    data_feature['F_int'] = df_data_standard.sum(axis=0)         # The integral value
+    data_feature['F_int'] = df_data_standard.sum(axis=0)  # The integral value
 
-
-    r_SR = (1 / (OPTION_SR*1))                            # The move average of 1/(SR*1)
+    r_SR = (1 / (OPTION_SR * 1))                     # The move average of 1/(SR*1)
     move_average = np.zeros(df_data_standard.shape)
     move_average[0, :] = r_SR * df_data_standard.iloc[0, :]
     for SR_index in range(1, df_data_standard.shape[1]):
-        move_average[SR_index, :] = (1-r_SR)*df_data_standard.iloc[SR_index-1, :] + \
-                                    r_SR*(df_data_standard.iloc[SR_index, :]-df_data_standard.iloc[SR_index-1, :])
+        move_average[SR_index, :] = (1 - r_SR) * df_data_standard.iloc[SR_index - 1, :] + \
+                                    r_SR * (df_data_standard.iloc[SR_index, :] - df_data_standard.iloc[SR_index - 1, :])
 
     data_feature['SR_1_max'] = move_average.max(axis=0)
     data_feature['SR_1_min'] = move_average.min(axis=0)
 
-    r_SR = (1 / (OPTION_SR*10))                            # The move average of 1/(SR*10)
+    r_SR = (1 / (OPTION_SR * 10))  # The move average of 1/(SR*10)
     move_average = np.zeros(df_data_standard.shape)
     move_average[0, :] = r_SR * df_data_standard.iloc[0, :]
     for SR_index in range(1, df_data_standard.shape[1]):
-        move_average[SR_index, :] = (1-r_SR)*df_data_standard.iloc[SR_index-1, :] + \
-                                    r_SR*(df_data_standard.iloc[SR_index, :]-df_data_standard.iloc[SR_index-1, :])
+        move_average[SR_index, :] = (1 - r_SR) * df_data_standard.iloc[SR_index - 1, :] + \
+                                    r_SR * (df_data_standard.iloc[SR_index, :] - df_data_standard.iloc[SR_index - 1, :])
 
     data_feature['SR_10_max'] = move_average.max(axis=0)
     data_feature['SR_10_min'] = move_average.min(axis=0)
 
-    r_SR = (1 / (OPTION_SR*100))                            # The move average of 1/(SR*100)
+    r_SR = (1 / (OPTION_SR * 100))  # The move average of 1/(SR*100)
     move_average = np.zeros(df_data_standard.shape)
     move_average[0, :] = r_SR * df_data_standard.iloc[0, :]
     for SR_index in range(1, df_data_standard.shape[1]):
-        move_average[SR_index, :] = (1-r_SR)*df_data_standard.iloc[SR_index-1, :] + \
-                                    r_SR*(df_data_standard.iloc[SR_index, :]-df_data_standard.iloc[SR_index-1, :])
+        move_average[SR_index, :] = (1 - r_SR) * df_data_standard.iloc[SR_index - 1, :] + \
+                                    r_SR * (df_data_standard.iloc[SR_index, :] - df_data_standard.iloc[SR_index - 1, :])
 
     data_feature['SR_100_max'] = move_average.max(axis=0)
     data_feature['SR_100_min'] = move_average.min(axis=0)
 
     '''
-    Save the feature to 'feature_data'
+    Save the feature to '/Dendrobium_Feature_Data/'
     Format: .csv
     '''
-    if os.path.exists(data_dir + '/feature_data/') is not True:
-        os.makedirs(data_dir + '/feature_data/')
+    if os.path.exists(data_dir + '/Dendrobium_Feature_Data/') is not True:
+        os.makedirs(data_dir + '/Dendrobium_Feature_Data/')
     file_name_whole = txt_name.split('/')[-1]
-    file_name_standard = file_name_whole.split('-')[0] + '-' +file_name_whole.split('-')[1]
-    data_feature.to_csv(data_dir + '/feature_data/' + file_name_standard + '.csv')
-    plt.show()
-
+    file_name_standard = file_name_whole.split('-')[0] + '-' + file_name_whole.split('-')[1]
+    data_feature.to_csv(data_dir + '/Dendrobium_Feature_Data/' + file_name_standard + '.csv')
+    print(file_name_standard + ' is OK')
