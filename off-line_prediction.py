@@ -15,12 +15,9 @@ Methods:
     5. Decision Tree
     6. Random Forest
 """
-from sklearn import datasets
 import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from matplotlib.colors import ListedColormap
 from sklearn.metrics import accuracy_score
 
 from sklearn.linear_model import Perceptron
@@ -32,9 +29,6 @@ from sklearn.ensemble import RandomForestClassifier
 X = np.loadtxt('x_sample.csv', delimiter=',')
 y = np.loadtxt('y_label.csv', delimiter=',', dtype='int8')
 
-# iris = datasets.load_iris()
-# X = iris.data[:, [2, 3]]
-# y = iris.target
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
 sc = StandardScaler()
@@ -117,7 +111,7 @@ print('SVM_RBF accuracy is ' + str(svm_rbf_accuracy) + ' ,and ' +
       str(misclassified_number) + 'sample(s) is misclassified')
 
 """
-Method 4: Support Vector machine (rbf kernel)
+Method 4: Tree
 """
 tree_error_sample = []
 tree = DecisionTreeClassifier(criterion='entropy', max_depth=3, random_state=0)
@@ -151,14 +145,13 @@ print('Forest accuracy is ' + str(forest_accuracy) + ' ,and ' +
       str(misclassified_number) + 'sample(s) is misclassified')
 
 
-np.savetxt('ppn.txt', np.array(ppn_error_sample))
-np.savetxt('lr.txt', np.array(lr_error_sample))
-np.savetxt('svm-linear.txt', np.array(svm_linear_error_sample))
-np.savetxt('svm-rbf.txt', np.array(svm_rbf_error_sample))
-np.savetxt('tree.txt', np.array(tree_error_sample))
-np.savetxt('forest.txt', np.array(forest_error_sample))
+np.savetxt('./prediction_result/ppn.txt', np.array(ppn_error_sample))
+np.savetxt('./prediction_result/lr.txt', np.array(lr_error_sample))
+np.savetxt('./prediction_result/svm-linear.txt', np.array(svm_linear_error_sample))
+np.savetxt('./prediction_result/svm-rbf.txt', np.array(svm_rbf_error_sample))
+np.savetxt('./prediction_result/tree.txt', np.array(tree_error_sample))
+np.savetxt('./prediction_result/forest.txt', np.array(forest_error_sample))
 
 
 
-print(X, X.shape)
-print(y, y.shape)
+
