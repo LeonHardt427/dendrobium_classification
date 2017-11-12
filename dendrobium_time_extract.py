@@ -14,20 +14,22 @@ Set parameter
 """
 OPTION_SENSOR_NUMBER = 16
 TIME_START = 0
-TIME_END = 1000
+TIME_END = 159
 POINT_START = TIME_START * 100
-POINT_END =  TIME_END * 100
-FREQUENCY = 100
+POINT_END = TIME_END * 100
+FREQUENCY = 500               # frequence
 FEATURE_NUMBER = (POINT_END - POINT_START) / FREQUENCY
 OPTION_BASELINE = 2000
 TIME = 33800
 
+# FUNCTION = 'test'
+FUNCTION = 'train'
 """
 Get direction
 """
 
 data_dir = os.getcwd()
-file_name_list = glob.glob(data_dir + '/Dendrobium_Original_Data/' + '*.txt')
+file_name_list = glob.glob('H:/dendrobium_data/Dendrobium_Standard_Data_Partly/' + FUNCTION + '/*.txt')
 
 """
 Extract time feature
@@ -53,16 +55,20 @@ for file_name in file_name_list:
     To: './Dendrobium_Time_Feature/' + Frequency
     """
 
-    if os.path.exists(data_dir + '/Dendrobium_Time_Feature/F' + str(FREQUENCY) + 'toT' + str(TIME_END)) is not True:
-        os.makedirs(data_dir + '/Dendrobium_Time_Feature/F' + str(FREQUENCY) + 'toT' + str(TIME_END))
+    if os.path.exists(data_dir + '/Dendrobium_Time_Feature/Size02/F' + str(FREQUENCY) + 'toT' + str(TIME_END) + '/' +
+                      FUNCTION) is not True:
+        os.makedirs(data_dir + '/Dendrobium_Time_Feature/Size02/F' + str(FREQUENCY) + 'toT' + str(TIME_END) + '/' +
+                    FUNCTION)
 
-    file_name_whole = file_name.split('/')[-1]
+    file_name_whole = file_name.split('\\')[-1]
     file_name_standard = file_name_whole.split('-')[0] + '-' + file_name_whole.split('-')[1]
     data_time_feature.to_csv(
-        data_dir + '/Dendrobium_Time_Feature/F' + str(FREQUENCY) + 'toT' + str(TIME_END) + '/' +
-        file_name_standard + ".csv")
+            data_dir + '/Dendrobium_Time_Feature/Size02/F' + str(FREQUENCY) + 'toT' + str(TIME_END) + '/' +
+            FUNCTION + '/' + file_name_standard + ".csv")
     print(data_time_feature.shape)
     print(file_name_standard + ' is OK')
+print('time from ' + '0 to ' + str(min(POINT_END, df_standard.shape[0])))
+
 
 if __name__ == '__main__':
     print('all are done')
