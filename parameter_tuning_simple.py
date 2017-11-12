@@ -6,6 +6,7 @@
 
 
 import numpy as np
+import os
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV
@@ -14,9 +15,19 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
+"""
+Parameter
+"""
+NAME_SAMPLE = 'F500toT159'
+DIR_SIZE = "/size02/"
+
+
+if os.path.exists("./parameter_result/" + DIR_SIZE + NAME_SAMPLE) is not True:
+    os.makedirs("./parameter_result/" + DIR_SIZE + NAME_SAMPLE)
+
 if __name__ == '__main__':
-    X = np.loadtxt('x_sample_F500toT119.csv', delimiter=',')
-    y = np.loadtxt('y_label_F500toT119.csv', delimiter=',', dtype='int8')
+    X = np.loadtxt('x_sample_train_02' + NAME_SAMPLE + '.csv', delimiter=',')           # change load-date here
+    y = np.loadtxt('y_label_train_02' + NAME_SAMPLE + '.csv', delimiter=',', dtype='int8')
 
     """
     choose the classification method:
@@ -30,8 +41,7 @@ if __name__ == '__main__':
     METHOD = 'ALL'
     REPORT_NEED = 0
     param_range = [0.000001, 0.000005, 0.00001, 0.00005, 0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05,  0.1, 0.5, 1.0,
-                   5.0, 10.0, 25.0, 40.0, 60.0, 80.0, 100.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 2000.0, 4000.0, 6000.0, 8000.0,
-                   10000.0, 20000.0, 30000.0]
+                   5.0, 10.0, 40.0, 80.0, 100.0, 400.0, 800.0, 1000.0, 4000.0, 8000.0, 10000.0, 20000.0, 30000.0]
     # param_range = [0.1, 1.0, 10.0]
     max_depth_range = range(2, 50, 2)
 
@@ -53,7 +63,7 @@ if __name__ == '__main__':
                                                     gs.cv_results_['std_test_score'][number],
                                                     gs.cv_results_['params'][number],))
 
-        with open("./parameter_result/lr_parameter.txt", "w") as lr:
+        with open(("./parameter_result/" + DIR_SIZE + NAME_SAMPLE + "/lr_parameter.txt"), "w") as lr:
             lr.write('mean_test_score: ' + str(gs.cv_results_['mean_test_score']) + '\n' + 'std_test_score: ' +
                      str(gs.cv_results_['std_test_score']) + '\nparameters: ' + str(gs.cv_results_['params']) + '\n' +
                      'Best parameters of Logistic Regression is: ' + str(gs.best_params_) + '\n' +
@@ -79,9 +89,10 @@ if __name__ == '__main__':
                 print("%0.3f (+/-%0.03f) for %r" % (gs.cv_results_['mean_test_score'][number],
                                                     gs.cv_results_['std_test_score'][number],
                                                     gs.cv_results_['params'][number],))
-        with open("./parameter_result/SVM_parameter.txt", "w") as svm_parameter:
-            svm_parameter.write('mean_test_score: ' + str(gs.cv_results_['mean_test_score']) + '\n' + 'std_test_score: ' +
-                                str(gs.cv_results_['std_test_score']) + '\nparameters: ' + str(gs.cv_results_['params']) + '\n' +
+        with open(("./parameter_result/" + DIR_SIZE + NAME_SAMPLE + "/SVM_parameter.txt"), "w") as svm_parameter:
+            svm_parameter.write('mean_test_score: ' + str(gs.cv_results_['mean_test_score']) + '\n' +
+                                'std_test_score: ' + str(gs.cv_results_['std_test_score']) + '\nparameters: ' +
+                                 str(gs.cv_results_['params']) + '\n' +
                                 'Best parameters of SVM is: ' + str(gs.best_params_) + '\n' +
                                 'Best score of SVM is: ' + str(gs.best_score_))
         print("Best parameters of SVM is:")
@@ -105,9 +116,10 @@ if __name__ == '__main__':
                 print("%0.3f (+/-%0.03f) for %r" % (gs.cv_results_['mean_test_score'][number],
                                                     gs.cv_results_['std_test_score'][number],
                                                     gs.cv_results_['params'][number],))
-        with open("./parameter_result/Tree_parameter.txt", "w") as tree_parameter:
-            tree_parameter.write('mean_test_score: ' + str(gs.cv_results_['mean_test_score']) + '\n' + 'std_test_score: ' +
-                                 str(gs.cv_results_['std_test_score']) + '\nparameters: ' + str(gs.cv_results_['params']) +
+        with open(("./parameter_result/" + DIR_SIZE + NAME_SAMPLE + "/Tree_parameter.txt"), "w") as tree_parameter:
+            tree_parameter.write('mean_test_score: ' + str(gs.cv_results_['mean_test_score']) + '\n' +
+                                 'std_test_score: ' + str(gs.cv_results_['std_test_score']) + '\nparameters: ' +
+                                 str(gs.cv_results_['params']) +
                                  '\n' + 'Best parameters of Tree is: ' + str(gs.best_params_) + '\n' +
                                  'Best score of Tree is: ' + str(gs.best_score_))
         print("Best parameters of Tree is:")
@@ -130,9 +142,10 @@ if __name__ == '__main__':
                 print("%0.3f (+/-%0.03f) for %r" % (gs.cv_results_['mean_test_score'][number],
                                                     gs.cv_results_['std_test_score'][number],
                                                     gs.cv_results_['params'][number],))
-        with open("./parameter_result/forest_parameter.txt", "w") as forest_parameter:
-            forest_parameter.write('mean_test_score: ' + str(gs.cv_results_['mean_test_score']) + '\n' + 'std_test_score: ' +
-                                   str(gs.cv_results_['std_test_score']) + '\nparameters: ' + str(gs.cv_results_['params']) +
+        with open(("./parameter_result/" + DIR_SIZE + NAME_SAMPLE + "/forest_parameter.txt"), "w") as forest_parameter:
+            forest_parameter.write('mean_test_score: ' + str(gs.cv_results_['mean_test_score']) + '\n' +
+                                   'std_test_score: ' + str(gs.cv_results_['std_test_score']) + '\nparameters: ' +
+                                   str(gs.cv_results_['params']) +
                                    '\n' + 'Best parameters of Forest is: ' + str(gs.best_params_) + '\n' +
                                    'Best score of Forest is: ' + str(gs.best_score_))
         print("Best parameters of FOREST is:")
