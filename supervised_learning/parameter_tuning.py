@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Time    : 2017/10/28 下午2:19
 # @Author  : LeonHardt
@@ -13,7 +12,10 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier#!/usr/bin/env python
+
+
+
 if __name__ == '__main__':
     X = np.loadtxt('x_sample_F500toT119.csv', delimiter=',')
     y = np.loadtxt('y_label_F500toT119.csv', delimiter=',', dtype='int8')
