@@ -1,2 +1,4 @@
 # ºöÂÔCSVÎÄ¼ş
 *.csv
+.idea/*
+__pycache__/*
