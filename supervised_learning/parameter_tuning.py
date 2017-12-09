@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Time    : 2017/10/28 下午2:19
 # @Author  : LeonHardt
@@ -9,17 +10,21 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV
 
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier#!/usr/bin/env python
-
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.neighbors import KNeighborsClassifier
 
 
 if __name__ == '__main__':
-    X = np.loadtxt('x_sample_F500toT119.csv', delimiter=',')
-    y = np.loadtxt('y_label_F500toT119.csv', delimiter=',', dtype='int8')
+    X = np.loadtxt('x_sample.csv', delimiter=',')
+    y = np.loadtxt('y_label.csv', delimiter=',', dtype='int8')
 
+    scl = ('scl', StandardScaler())
+    lda = ('lda', LinearDiscriminantAnalysis())
+    para_lda = range(1, 12, 1)
     """
     choose the classification method:
     Methods:
@@ -29,8 +34,8 @@ if __name__ == '__main__':
         4. Random Forest    ------------------------         'forest'
     """
     # Set the parameter of the classification method
-    METHOD = 'ALL'
-    REPORT_NEED = 0
+    METHOD = 'KNN'
+    REPORT_NEED = 1
     param_range = [0.000001, 0.000005, 0.00001, 0.00005, 0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05,  0.1, 0.5, 1.0,
                    5.0, 10.0, 25.0, 40.0, 60.0, 80.0, 100.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 2000.0, 4000.0, 6000.0, 8000.0,
                    10000.0, 20000.0, 30000.0]
@@ -141,6 +146,26 @@ if __name__ == '__main__':
         print(gs.best_params_)
         print(gs.best_score_)
 
+    """
+    if method is 'knn'
+    """
+    if METHOD is 'KNN' or METHOD is 'ALL':
+        # pip_knn = Pipeline([scl, lda, ('knn', KNeighborsClassifier())])
+        # param_grid = [{'lda__n_components': para_lda, 'knn__n_neighbors': range(1, 5, 1)}]
+        pip_knn = Pipeline([scl, ('knn', KNeighborsClassifier())])
+        param_grid = [{'knn__n_neighbors': range(1, 6, 1)}]
+        gs = GridSearchCV(estimator=pip_knn, param_grid=param_grid, scoring='accuracy', cv=10, n_jobs=-1)
+        gs = gs.fit(X, y)
+        if REPORT_NEED is 1:
+            print()
+            for number in range(5):
+                print("%0.3f (+/-%0.03f) for %r" % (gs.cv_results_['mean_test_score'][number],
+                                                    gs.cv_results_['std_test_score'][number],
+                                                    gs.cv_results_['params'][number],))
+
+        print("Best parameters of KNN is:")
+        print(gs.best_params_)
+        print(gs.best_score_)
 
 
 

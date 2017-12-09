@@ -1,8 +1,7 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @Time    : 2017/10/23 下午9:23
+# @Time    : 2017/12/7 19:50
 # @Author  : LeonHardt
-# @File    : offline_K_fold.py
+# @File    : dimension_Kfold_prediction.py
 
 
 """
@@ -23,8 +22,9 @@ import numpy as np
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
-
 from sklearn.model_selection import StratifiedKFold
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+
 from sklearn.linear_model import Perceptron
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
@@ -32,16 +32,19 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier
 
+
 X = np.loadtxt('x_sample.csv', delimiter=',')
 y = np.loadtxt('y_label.csv', delimiter=',', dtype='int8')
+dim = 3
 
 K_fold = StratifiedKFold(n_splits=10, random_state=1)
-
+scl = ('scl', StandardScaler())
+lda = ('lda', LinearDiscriminantAnalysis(n_components=dim))
 
 """
 Method 1: Perceptron
 """
-pipe_ppn = Pipeline([('scl', StandardScaler()), ('ppn', Perceptron(n_iter=100, eta0=0.1))])
+pipe_ppn = Pipeline([scl, lda, ('ppn', Perceptron(n_iter=100, eta0=0.1))])
 ppn_score = []
 fold_times = 1
 for train_index, test_index in K_fold.split(X, y):
@@ -56,7 +59,7 @@ print('Perceptron CV accuracy: %s +/- %s' % (ppn_score_cv[0], ppn_score_cv[1]))
 """
 Method 2: Logistic Regression
 """
-pipe_lr = Pipeline([('scl', StandardScaler()), ('lr', LogisticRegression(C=1000.0))])
+pipe_lr = Pipeline([scl, lda, ('lr', LogisticRegression(C=1000.0))])
 lr_score = []
 fold_times = 1
 for train_index, test_index in K_fold.split(X, y):
@@ -71,7 +74,7 @@ print('LOGISTIC CV accuracy: %s +/- %s' % (lr_score_cv[0], lr_score_cv[1]))
 """
 Method 3: Support Vector machine (linear kernel)
 """
-pipe_svm_linear = Pipeline([('scl', StandardScaler()), ('svm_linear', SVC(kernel='linear', C=1.0))])
+pipe_svm_linear = Pipeline([scl, lda, ('svm_linear', SVC(kernel='linear', C=1.0))])
 svm_linear_score = []
 fold_times = 1
 for train_index, test_index in K_fold.split(X, y):
@@ -86,7 +89,7 @@ print('SVM_LINEAR CV accuracy: %s +/- %s' % (svm_linear_score_cv[0], svm_linear_
 """
 Method 4: Support Vector machine (rbf kernel)
 """
-pipe_svm_rbf = Pipeline([('scl', StandardScaler()), ('svm_rbf', SVC(kernel='rbf', C=1.0, gamma=0.2))])
+pipe_svm_rbf = Pipeline([scl, lda, ('svm_rbf', SVC(kernel='rbf', C=1.0, gamma=0.2))])
 svm_rbf_score = []
 fold_times = 1
 for train_index, test_index in K_fold.split(X, y):
@@ -101,7 +104,7 @@ print('SVM_RBF CV accuracy: %s +/- %s' % (svm_rbf_score_cv[0], svm_rbf_score_cv[
 """
 Method 5: Decision Tree 
 """
-pipe_tree = Pipeline([('scl', StandardScaler()), ('tree', DecisionTreeClassifier(criterion='entropy', max_depth=8))])
+pipe_tree = Pipeline([scl, lda, ('tree', DecisionTreeClassifier(criterion='entropy', max_depth=8))])
 tree_score = []
 fold_times = 1
 for train_index, test_index in K_fold.split(X, y):
@@ -116,7 +119,7 @@ print('Tree CV accuracy: %s +/- %s' % (tree_score_cv[0], tree_score_cv[1]))
 """
 Method 6: Random Forest
 """
-pipe_forest = Pipeline([('scl', StandardScaler()), ('forest', RandomForestClassifier(criterion='entropy', max_depth=8))])
+pipe_forest = Pipeline([scl, lda, ('forest', RandomForestClassifier(criterion='entropy', max_depth=8))])
 forest_score = []
 fold_times = 1
 for train_index, test_index in K_fold.split(X, y):
@@ -131,7 +134,7 @@ print('Forest CV accuracy: %s +/- %s' % (forest_score_cv[0], forest_score_cv[1])
 """
 Method 7: KNN
 """
-pipe_knn = Pipeline([('scl', StandardScaler()), ('knn', KNeighborsClassifier(n_neighbors=1))])
+pipe_knn = Pipeline([scl, lda, ('knn', KNeighborsClassifier(n_neighbors=1))])
 knn_score = []
 fold_times = 1
 for train_index, test_index in K_fold.split(X, y):
@@ -141,12 +144,4 @@ for train_index, test_index in K_fold.split(X, y):
     knn_score.append(score)
 knn_score_cv = [np.mean(knn_score), np.std(knn_score)]
 print('KNN CV accuracy: %s +/- %s' % (knn_score_cv[0], knn_score_cv[1]))
-
-
-# np.savetxt('ppn.txt', np.array(ppn_error_sample))
-# np.savetxt('lr.txt', np.array(lr_error_sample))
-# np.savetxt('svm-linear.txt', np.array(svm_linear_error_sample))
-# np.savetxt('svm-rbf.txt', np.array(svm_rbf_error_sample))
-# np.savetxt('tree.txt', np.array(tree_error_sample))
-# np.savetxt('forest.txt', np.array(forest_error_sample))
 
