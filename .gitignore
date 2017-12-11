@@ -2,3 +2,8 @@
 *.csv
 .idea/*
 __pycache__/*
+*/draw_data/*
+*.png
+*.txt
+*/.idea/*
+*/__pycache__/*

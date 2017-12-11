@@ -12,13 +12,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
-
+    '''
+    Read data
+    '''
     X = np.loadtxt('x_sample.csv', delimiter=',')
     y = np.loadtxt('y_label.csv', delimiter=',', dtype='int8')
     le = LabelEncoder()
     y = le.fit_transform(y)
     # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=1)
 
+    '''
+    KNN
+    '''
     knn = KNeighborsClassifier(n_neighbors=3, p=2, metric='minkowski')
 
     result = []
@@ -47,21 +52,7 @@ if __name__ == '__main__':
             plt.plot(x_data, y_data, "b--", label='cos')
             plt.legend(loc="upper left", shadow=True)
             plt.pause(0.001)
-    # result_plot = np.array(result)
-    # x_data = result_plot[:, 0]
-    # y_data = result_plot[:, 1]
-    #
-    #
-    # plt.title('Bagging_2NN')
-    # plt.grid(True)
-    # plt.xlabel('Accuracy')
-    # plt.xlim(0, 100)
-    # plt.ylabel('Times')
-    # plt.ylim(0, 1)
-    #
-    # plt.plot(x_data, y_data, "b--", label='cos')
-    # plt.legend(loc="upper left", shadow=True)
-    # plt.pause(0.01)
+
     plt.ioff()
     plt.show()
     plt.savefig('result_knn_3_150')
