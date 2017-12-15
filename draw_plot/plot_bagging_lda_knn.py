@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 
 dir_file = os.getcwd()
-dir_file = dir_file + '/draw_data/bagging_lda_sample0.8_knn/'
+dir_file = dir_file + '/draw_data/bagging_ldaright_knn/'
 KNN = 4
 
 marker = ['.', ',', 'o', 'v', '<', '*', '+', '1', '2']
@@ -24,8 +24,8 @@ if __name__ == '__main__':
     ax.spines['top'].set_visible(False)   # cancel top ground
     ax.spines['right'].set_visible(False)
 
-    for lda in range(1, 9, 1):
-        number = lda - 1
+    for lda in range(2, 10, 1):
+        number = lda
         name_file = dir_file + 'bagging_lda' + str(lda) + '_K' + str(KNN) + '.txt'
         data = np.loadtxt(name_file, delimiter=',')
         X = data[:, 0]
@@ -33,7 +33,7 @@ if __name__ == '__main__':
 
         accuracy = np.max(y)
         index = np.argmax(y)
-        if lda == 1:
+        if lda == 2:
             result = [index, accuracy]
         else:
             now_result = np.array([index, accuracy])
@@ -43,7 +43,7 @@ if __name__ == '__main__':
 
         plt.plot(X, y, linestyle='-', color=color[number], label='lda'+str(lda), linewidth=1.5)
 
-    np.savetxt('result_'+str(KNN)+'NN.txt', X=result, delimiter=',')
+    np.savetxt('result_'+str(KNN)+'NN_10.txt', X=result, delimiter=',')
 
     plt.xticks(range(0, 50, 5), fontsize=12, fontweight='bold')
     plt.yticks(fontsize=12, fontweight='bold')
@@ -56,7 +56,7 @@ if __name__ == '__main__':
     text = leg.get_texts()
     plt.setp(text, fontsize=12, fontweight='bold')
 
-    plt.savefig('KNN'+str(KNN)+'.png', format='png')
+    plt.savefig('KNN'+str(KNN)+'_10.png', format='png')
     plt.show()
 
 

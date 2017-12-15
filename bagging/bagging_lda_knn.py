@@ -10,7 +10,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import cross_val_score
 from sklearn.ensemble import BaggingClassifier
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
+from sklearn.manifold import LocallyLinearEmbedding
 from sklearn.pipeline import Pipeline
 
 
@@ -27,20 +28,23 @@ if __name__ == '__main__':
 
     for K in range(1, 5, 1):
         KNN = KNeighborsClassifier(n_neighbors=K, p=2, metric='minkowski')
-        for component in range(1, 10, 1):
+        for component in range(1, 5, 1):
             result = []
             for time in range(2, 50, 1):
                 print('the %d times' % time)
                 clf_all = Pipeline(steps=[
                     ('sc', StandardScaler()),
-                    ('lda', LinearDiscriminantAnalysis(n_components=component)),
+                    # ('lda', LinearDiscriminantAnalysis(n_components=component)),
+                    # ('qda', QuadraticDiscriminantAnalysis()),
+                    ('lle', LocallyLinearEmbedding(n_neighbors=5, n_components=component,)),
+
                     ('bag', BaggingClassifier(base_estimator=KNN, n_estimators=time, max_samples=0.8,
-                                              max_features=1.0, bootstrap=True, bootstrap_features=False,
+                                              max_features=1.0, bootstrap=True, bootstrap_features=True,
                                               n_jobs=1, random_state=1))])
                 scores = cross_val_score(estimator=clf_all, X=X, y=y, cv=10, n_jobs=-1)
                 result.append([time, np.mean(scores), np.std(scores)])
 
-            name = 'bagging_lda' + str(int(component)) + '_K' + str(int(K)) + '.txt'
+            name = 'bagging_lle' + str(int(component)) + '_K' + str(int(K)) + '.txt'
             np.savetxt(name, result, delimiter=',')
 
 
