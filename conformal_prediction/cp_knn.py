@@ -16,7 +16,7 @@ def cp_knn(x_test, x_train, y_train, k):
 
     for sample in range(sample_number):
         sample_test = x_test[sample, :]
-        predict = np.zeros((1, all_label_number))
+        predict = np.zeros((all_label_number))
 
         # stack the train set and the test sample
         for label_number in range(all_label_number):
@@ -26,7 +26,7 @@ def cp_knn(x_test, x_train, y_train, k):
             print(x_train_set)
             print(y_train_set)
             set_sample_number = x_train_set.shape[0]
-            p_value_tmp = np.zeros((1, set_sample_number))
+            p_value_tmp = np.zeros(( set_sample_number))
 
             # calculate the p_value
             for set_sample in range(set_sample_number):
@@ -62,21 +62,25 @@ def cp_knn(x_test, x_train, y_train, k):
 
                 dist_same_result.sort()
                 dist_diff_result.sort()
-                same_value_simple = np.sum(dist_same_result[0:(k-1)])
-                diff_value_simple = np.sum(dist_diff_result[0:(k-1)])
-                p_value_tmp[0, set_sample] = same_value_simple / diff_value_simple
+                same_value_simple = np.sum(dist_same_result[0:k])
+                diff_value_simple = np.sum(dist_diff_result[0:k])
+                p_value_tmp[set_sample] = same_value_simple / diff_value_simple
 
-            predict[0, label_number] = np.sum(p_value_tmp > p_value_tmp[set_sample_number]) / (p_value_tmp.shape[0])
+            print(p_value_tmp)
+            print(p_value_tmp[-1])
+            p_value_numetrator = np.sum(p_value_tmp > p_value_tmp[-1])
+            print(p_value_tmp.shape)
+            p_value_denominator = float(p_value_tmp.shape[0])
+            predict[label_number] = p_value_numetrator / p_value_denominator
 
         p_value[sample, :] = predict
         print(p_value)
     return p_value
 
 
+if __name__ == '__main__':
+    xt_test = np.array([[1, 1], [2, 2], [3, 3]])
+    xt_train = np.array([[5, 6], [7, 8], [9, 10]])
+    yt_train = np.array([[1], [2], [2]])
 
-
-xt_test = np.array([[1, 1], [2, 2], [3, 3]])
-xt_train = np.array([[5, 6], [7, 8], [9, 10]])
-yt_train = np.array([[1], [2], [1]])
-
-cp_knn(xt_test, xt_train, yt_train, 3)
+    cp_knn(xt_test, xt_train, yt_train, 3)
