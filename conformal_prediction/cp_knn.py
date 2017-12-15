@@ -8,7 +8,7 @@
 import numpy as np
 
 
-def cp_knn(x_test, x_train, y_train, k):
+def ConformalPredictionKnn(x_test, x_train, y_train, k):
     all_label = np.unique(y_train)
     all_label_number = all_label.size
     p_value = np.zeros((x_test.shape[0], all_label_number))
@@ -16,7 +16,7 @@ def cp_knn(x_test, x_train, y_train, k):
 
     for sample in range(sample_number):
         sample_test = x_test[sample, :]
-        predict = np.zeros((all_label_number))
+        predict = np.zeros(all_label_number)
 
         # stack the train set and the test sample
         for label_number in range(all_label_number):
@@ -26,7 +26,7 @@ def cp_knn(x_test, x_train, y_train, k):
             print(x_train_set)
             print(y_train_set)
             set_sample_number = x_train_set.shape[0]
-            p_value_tmp = np.zeros(( set_sample_number))
+            p_value_tmp = np.zeros(set_sample_number)
 
             # calculate the p_value
             for set_sample in range(set_sample_number):
@@ -76,11 +76,3 @@ def cp_knn(x_test, x_train, y_train, k):
         p_value[sample, :] = predict
         print(p_value)
     return p_value
-
-
-if __name__ == '__main__':
-    xt_test = np.array([[1, 1], [2, 2], [3, 3]])
-    xt_train = np.array([[5, 6], [7, 8], [9, 10]])
-    yt_train = np.array([[1], [2], [2]])
-
-    cp_knn(xt_test, xt_train, yt_train, 3)
