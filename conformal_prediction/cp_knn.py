@@ -8,23 +8,23 @@
 import numpy as np
 
 
-def ConformalPredictionKnn(x_test, x_train, y_train, k):
-    all_label = np.unique(y_train)
+def ConformalPredictionKnn(x_train, x_test, y_train, k):
+    all_label = np.unique(y_train).reshape((-1, 1))
     all_label_number = all_label.size
     p_value = np.zeros((x_test.shape[0], all_label_number))
     sample_number = x_test.shape[0]
 
     for sample in range(sample_number):
+        print('the ' + str(sample) + ' predict is start')
         sample_test = x_test[sample, :]
         predict = np.zeros(all_label_number)
 
         # stack the train set and the test sample
         for label_number in range(all_label_number):
-            y_label = all_label[label_number]
+            y_label = all_label[label_number, :]
             x_train_set = np.vstack((x_train, sample_test))
             y_train_set = np.vstack((y_train, y_label))
-            print(x_train_set)
-            print(y_train_set)
+
             set_sample_number = x_train_set.shape[0]
             p_value_tmp = np.zeros(set_sample_number)
 
@@ -60,19 +60,31 @@ def ConformalPredictionKnn(x_test, x_train, y_train, k):
                     else:
                         dist_diff_result = np.vstack((dist_diff_result, dist_diff))
 
-                dist_same_result.sort()
-                dist_diff_result.sort()
+                dist_same_result.sort(axis=0)
+                dist_diff_result.sort(axis=0)
                 same_value_simple = np.sum(dist_same_result[0:k])
                 diff_value_simple = np.sum(dist_diff_result[0:k])
                 p_value_tmp[set_sample] = same_value_simple / diff_value_simple
 
-            print(p_value_tmp)
-            print(p_value_tmp[-1])
+
             p_value_numetrator = np.sum(p_value_tmp > p_value_tmp[-1])
-            print(p_value_tmp.shape)
+
             p_value_denominator = float(p_value_tmp.shape[0])
             predict[label_number] = p_value_numetrator / p_value_denominator
-
+        print('the '+str(sample)+' is done')
         p_value[sample, :] = predict
-        print(p_value)
+
     return p_value
+
+
+def CP_KNN_offline(p_value):
+    prediction_number = p_value.shape[0]
+    p_value_prediction = np.zeros(prediction_number).reshape((prediction_number, 1))
+
+    for col in range(prediction_number):
+        p_value_prediction[col, 0] = p_value[col, :].argmax()
+        print('the' + str(col) + ' prediction is : ' + str(p_value_prediction[col, 0]))
+
+    return p_value_prediction
+
+
