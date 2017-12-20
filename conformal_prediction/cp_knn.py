@@ -9,13 +9,14 @@ import numpy as np
 
 
 def ConformalPredictionKnn(x_train, x_test, y_train, k):
+    y_train = y_train.reshape((-1, 1))
     all_label = np.unique(y_train).reshape((-1, 1))
     all_label_number = all_label.size
     p_value = np.zeros((x_test.shape[0], all_label_number))
     sample_number = x_test.shape[0]
 
     for sample in range(sample_number):
-        print('the ' + str(sample) + ' predict is start')
+        print(str(k)+'NN, the ' + str(sample) + ' predict is start')
         sample_test = x_test[sample, :]
         predict = np.zeros(all_label_number)
 
