@@ -58,7 +58,7 @@ if __name__ == '__main__':
     """
     Using StratifiedKFold
     """
-    for k_num in range(1, 4, 1):
+    for k_num in range(1, 5, 1):
 
         s_folder = StratifiedKFold(n_splits=10, shuffle=False, random_state=0)
         accuracy = []
@@ -71,7 +71,7 @@ if __name__ == '__main__':
             x_train_std = sc.transform(x_train)   # standardization
             x_test_std = sc.transform(x_test)
 
-            lda = LinearDiscriminantAnalysis(n_components=9)        # LDA
+            lda = LinearDiscriminantAnalysis(n_components=5)        # LDA
             lda.fit(x_train_std, y_train)
             x_train_std_lda = lda.transform(x_train_std)
             x_test_std_lda = lda.transform(x_test_std)
@@ -87,7 +87,7 @@ if __name__ == '__main__':
             score = score_prediction(knn_prediction, y_test)        # score
             accuracy.append(score)
 
-        np.savetxt('acc_k'+str(k_num)+'_lda.txt', accuracy, delimiter=',')
+        np.savetxt('acc_k'+str(k_num)+'_lda5.txt', accuracy, delimiter=',')
 
 
 
