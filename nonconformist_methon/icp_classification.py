@@ -3,10 +3,15 @@
 # @Author  : LeonHardt
 # @File    : icp_classification.py
 
+import os
 import numpy as np
 import pandas as pd
 
 from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
+
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
@@ -17,12 +22,31 @@ from nonconformist.evaluation import class_avg_c, class_mean_errors
 # ---------------------------------------------
 # intialize
 # ---------------------------------------------
+
+# model = SVC(kernel='rbf', C=4000, gamma=0.001, probability=True)
+# model_name = 'SVM'
+
+# model = RandomForestClassifier(n_estimators=12, criterion='entropy')
+# model_name = 'RandomForest'
+
+# model = DecisionTreeClassifier(criterion='entropy', max_depth=6)
+# model_name = 'Tree'
+
+model = KNeighborsClassifier(n_neighbors=3)
+model_name = '3NN'
+
+path = os.getcwd()
+summary_path = path + '/summary/'
+if os.path.exists(summary_path) is not True:
+    os.makedirs(summary_path)
+summary_file = summary_path + 'icp_' + model_name + '.csv'
+if os.path.exists(summary_file) is True:
+    os.remove(summary_file)
 X = np.loadtxt('x_sample.csv', delimiter=',')
 y = np.loadtxt('y_label.csv', delimiter=',', dtype='int8')
 
 sc = StandardScaler()
 X = sc.fit_transform(X)
-
 # -------------------------------------------------
 # Kfold test
 # -------------------------------------------------
@@ -31,10 +55,9 @@ s_folder = StratifiedKFold(n_splits=10, shuffle=True)
 for index, (train, test) in enumerate(s_folder.split(X, y)):
     X_train, X_test = X[train], X[test]
     y_train, y_test = y[train], y[test]
-    x_train_sp, x_cal, y_train_sp, y_cal = train_test_split(X_train, y_train, train_size=0.7, shuffle=True)
+    x_train_sp, x_cal, y_train_sp, y_cal = train_test_split(X_train, y_train, test_size=0.3, shuffle=True)
     y_test = y_test.reshape((-1, 1))
 
-    model = SVC(kernel='rbf', C=4000, gamma=0.001, probability=True)
     nc = NcFactory.create_nc(model=model)
     icp = IcpClassifier(nc)
 
@@ -42,15 +65,17 @@ for index, (train, test) in enumerate(s_folder.split(X, y)):
     icp.calibrate(x_cal, y_cal)
     prediction = icp.predict(X_test, significance=None)
 
-    result = [index, class_mean_errors(prediction, y_test, significance=0.5),
-              class_avg_c(prediction, y_test, significance=0.5)]
+    result = [index, class_mean_errors(prediction, y_test, significance=0.75),
+              class_avg_c(prediction, y_test, significance=0.75)]
     if index == 0:
         result_summary = result
     else:
         result_summary = np.vstack((result_summary, result))
 
 df_summary = pd.DataFrame(result_summary, columns=['index', 'mean_errors', 'average_count'])
-df_summary.to_csv('icp_svm')
+df_summary.to_csv(summary_file)
 print(df_summary)
+print(df_summary.mean(axis=0).values)
+
 
 
