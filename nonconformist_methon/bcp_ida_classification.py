@@ -45,8 +45,8 @@ summary = []
 #          '3NN': KNeighborsClassifier(n_neighbors=3)
 #          }
 
-# simple_model = SVC(C=4000, kernel='rbf', gamma=0.001, probability=True)
-# model_name = 'SVM'
+simple_model = SVC(C=4000, kernel='rbf', gamma=0.001, probability=True)
+model_name = 'SVM'
 
 sc = StandardScaler()
 X = sc.fit_transform(X)
@@ -60,8 +60,8 @@ X = sc.fit_transform(X)
 # simple_model = KNeighborsClassifier(n_neighbors=3)
 # model_name = '3NN'
 
-simple_model = KNeighborsClassifier(n_neighbors=1)
-model_name = '1NN'
+# simple_model = KNeighborsClassifier(n_neighbors=1)
+# model_name = '1NN'
 
 s_folder = StratifiedKFold(n_splits=10, shuffle=True)
 for k, (train, test) in enumerate(s_folder.split(X, y)):
@@ -69,12 +69,12 @@ for k, (train, test) in enumerate(s_folder.split(X, y)):
     y_train, y_test = y[train], y[test]
     truth = y_test.reshape((-1, 1))
 
-    lda = LinearDiscriminantAnalysis(n_components=5)
-    lda.fit(x_train_std, y_train)
-    x_train_lda = lda.transform(x_train_std)
+    lda = LinearDiscriminantAnalysis(n_components=9)
+    x_train_lda = lda.fit_transform(x_train_std, y_train)
     x_test_lda = lda.transform(x_test_std)
 
-    model = BootstrapConformalClassifier(IcpClassifier(ClassifierNc(ClassifierAdapter(simple_model))))
+    nc_fun = NcFactory.create_nc(model=simple_model)
+    model = BootstrapConformalClassifier(IcpClassifier(nc_fun))
     model.fit(x_train_lda, y_train)
     prediction = model.predict(x_test_lda, significance=None)
     table = np.hstack((prediction, truth))

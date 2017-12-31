@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2017/12/27 9:35
+# @Time    : 2017/12/31 11:23
 # @Author  : LeonHardt
-# @File    : icp_classification.py
+# @File    : icp_ida_classication.py
 
 import os
 import numpy as np
@@ -54,23 +54,28 @@ model_name = 'SVM'
 # model = KNeighborsClassifier(n_neighbors=1)
 # model_name = '1NN'
 # -------------------------
-
-significance = 0.5
+test_size = 0.3
+significance = 0.3
 result_summary = []
 
 s_folder = StratifiedKFold(n_splits=10, shuffle=True)
 for index, (train, test) in enumerate(s_folder.split(X, y)):
     X_train, X_test = X[train], X[test]
     y_train, y_test = y[train], y[test]
-    x_train_sp, x_cal, y_train_sp, y_cal = train_test_split(X_train, y_train, test_size=0.5, shuffle=True)
+    x_train_sp, x_cal, y_train_sp, y_cal = train_test_split(X_train, y_train, test_size=test_size, shuffle=True)
     y_test = y_test.reshape((-1, 1))
+
+    lda = LinearDiscriminantAnalysis(n_components=9)
+    x_train_lda = lda.fit_transform(x_train_sp, y_train_sp)
+    x_cal_lda = lda.transform(x_cal)
+    x_test_lda = lda.transform(X_test)
 
     nc = NcFactory.create_nc(model=model)
     icp = IcpClassifier(nc)
 
-    icp.fit(x_train_sp, y_train_sp)
-    icp.calibrate(x_cal, y_cal)
-    prediction = icp.predict(X_test, significance=None)
+    icp.fit(x_train_lda, y_train_sp)
+    icp.calibrate(x_cal_lda, y_cal)
+    prediction = icp.predict(x_test_lda, significance=None)
 
     result = [1-class_mean_errors(prediction, y_test, significance=significance),
               class_avg_c(prediction, y_test, significance=significance)]
@@ -84,8 +89,8 @@ for index, (train, test) in enumerate(s_folder.split(X, y)):
 
 df_summary = pd.DataFrame(result_summary, columns=['Accuracy', 'Average_count'])
 
-summary_path = path + '/summary/icp/'
-summary_file = summary_path + 'icp' + model_name + '.csv'
+summary_path = path + '/summary/icp/lda_' + str(test_size) + '/'
+summary_file = summary_path + 'icp_lda' + model_name + '.csv'
 if os.path.exists(summary_path) is not True:
     os.makedirs(summary_path)
 if os.path.exists(summary_file) is True:
@@ -93,6 +98,4 @@ if os.path.exists(summary_file) is True:
 
 df_summary.to_csv(summary_file)
 print(df_summary)
-
-
 
