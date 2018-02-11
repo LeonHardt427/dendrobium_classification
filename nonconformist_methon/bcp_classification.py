@@ -40,11 +40,11 @@ X = sc.fit_transform(X)
 significance = 0.57
 summary = []
 
-simple_model = SVC(C=4000, kernel='rbf', gamma=0.001, probability=True)
-model_name = 'SVM'
+# simple_model = SVC(C=4000, kernel='rbf', gamma=0.001, probability=True)
+# model_name = 'SVM'
 
-# simple_model = RandomForestClassifier(n_estimators=12, criterion='entropy')
-# model_name = 'RandomForest'
+simple_model = RandomForestClassifier(n_estimators=500, criterion='entropy')
+model_name = 'RandomForest'
 
 # simple_model = DecisionTreeClassifier(criterion='entropy', max_depth=6)
 # model_name = 'Tree'

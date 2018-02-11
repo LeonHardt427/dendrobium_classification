@@ -34,7 +34,7 @@ if __name__ == '__main__':
         4. Random Forest    ------------------------         'forest'
     """
     # Set the parameter of the classification method
-    METHOD = 'KNN'
+    METHOD = 'SVM'
     REPORT_NEED = 1
     param_range = [0.000001, 0.000005, 0.00001, 0.00005, 0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05,  0.1, 0.5, 1.0,
                    5.0, 10.0, 25.0, 40.0, 60.0, 80.0, 100.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 2000.0, 4000.0, 6000.0, 8000.0,
@@ -75,7 +75,8 @@ if __name__ == '__main__':
     if METHOD is 'SVM' or METHOD is 'ALL':
         pip_svm = Pipeline([('scl', StandardScaler()), ('clf', SVC(random_state=1))])
         param_grid = [{'clf__C': param_range, 'clf__kernel': ['linear']},
-                      {'clf__C': param_range, 'clf__gamma': param_range, 'clf__kernel': ['rbf']}]
+                      {'clf__C': param_range, 'clf__gamma': param_range,
+                       'clf__kernel': ['rbf']}]
         gs = GridSearchCV(estimator=pip_svm, param_grid=param_grid, scoring='accuracy', cv=10, n_jobs=-1)
         gs = gs.fit(X, y)
 
@@ -86,11 +87,11 @@ if __name__ == '__main__':
                 print("%0.3f (+/-%0.03f) for %r" % (gs.cv_results_['mean_test_score'][number],
                                                     gs.cv_results_['std_test_score'][number],
                                                     gs.cv_results_['params'][number],))
-        with open("./parameter_result/SVM_parameter.txt", "w") as svm_parameter:
-            svm_parameter.write('mean_test_score: ' + str(gs.cv_results_['mean_test_score']) + '\n' + 'std_test_score: ' +
-                                str(gs.cv_results_['std_test_score']) + '\nparameters: ' + str(gs.cv_results_['params']) + '\n' +
-                                'Best parameters of SVM is: ' + str(gs.best_params_) + '\n' +
-                                'Best score of SVM is: ' + str(gs.best_score_))
+        # with open("./parameter_result/SVM_parameter.txt", "w") as svm_parameter:
+        #     svm_parameter.write('mean_test_score: ' + str(gs.cv_results_['mean_test_score']) + '\n' + 'std_test_score: ' +
+        #                         str(gs.cv_results_['std_test_score']) + '\nparameters: ' + str(gs.cv_results_['params']) + '\n' +
+        #                         'Best parameters of SVM is: ' + str(gs.best_params_) + '\n' +
+        #                         'Best score of SVM is: ' + str(gs.best_score_))
         print("Best parameters of SVM is:")
         print(gs.best_params_)
         print(gs.best_score_)

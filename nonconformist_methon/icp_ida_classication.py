@@ -40,11 +40,11 @@ X = sc.fit_transform(X)
 # select_model
 # -------------------------
 
-# model = SVC(kernel='rbf', C=4000, gamma=0.001, probability=True)
+# model = SVC(kernel='rbf', C=6000, gamma=0.001, probability=True)
 # model_name = 'SVM'
 
-# model = RandomForestClassifier(n_estimators=12, criterion='entropy')
-# model_name = 'RandomForest'
+model = RandomForestClassifier(n_estimators=50, criterion='entropy')
+model_name = 'RandomForest'
 
 # model = DecisionTreeClassifier(criterion='entropy', max_depth=6)
 # model_name = 'Tree'
@@ -52,8 +52,8 @@ X = sc.fit_transform(X)
 # model = KNeighborsClassifier(n_neighbors=3)
 # model_name = '3NN'
 
-model = KNeighborsClassifier(n_neighbors=1)
-model_name = '1NN'
+# model = KNeighborsClassifier(n_neighbors=1)
+# model_name = '1NN'
 # -------------------------
 test_size = 0.3
 significance = 0.3
@@ -102,14 +102,17 @@ result_summary = []
 
 #-----------------------------------------------------------
 # force_prediction
-s_folder = StratifiedKFold(n_splits=10, shuffle=True)
+sum_accuracy = []
+time = 1
+s_folder = StratifiedKFold(n_splits=10, shuffle=True, random_state=1)
 for index, (train, test) in enumerate(s_folder.split(X, y)):
+    print(time)
     X_train, X_test = X[train], X[test]
     y_train, y_test = y[train], y[test]
     x_train_sp, x_cal, y_train_sp, y_cal = train_test_split(X_train, y_train, test_size=test_size, shuffle=True)
     y_test = y_test.reshape((-1, 1))
 
-    lda = LinearDiscriminantAnalysis(n_components=9)
+    lda = LinearDiscriminantAnalysis(n_components=5)
     x_train_lda = lda.fit_transform(x_train_sp, y_train_sp)
     x_cal_lda = lda.transform(x_cal)
     x_test_lda = lda.transform(X_test)
@@ -120,28 +123,35 @@ for index, (train, test) in enumerate(s_folder.split(X, y)):
     icp.fit(x_train_lda, y_train_sp)
     icp.calibrate(x_cal_lda, y_cal)
     prediction = icp.predict(x_test_lda, significance=None)
+    force_value = 1-force_mean_errors(prediction, y_test)
 
-    result = [1-force_mean_errors(prediction, y_test)]
-    if index == 0:
-        result_summary = result
-    else:
-        result_summary = np.vstack((result_summary, result))
-    print('\nICP_Force')
-    if np.unique(y_test).shape[0] == 10:
-        print('True')
-    else:
-        print('Warning!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-    print('Accuracy: {}'.format(result[0]))
+    sum_accuracy.append(force_value)
+    time += 1
 
-df_summary = pd.DataFrame(result_summary, columns=['Accuracy'])
+print(model_name + ':')
+print(np.mean(sum_accuracy))
 
-summary_path = path + '/summary/icp/lda_force/'
-summary_file = summary_path + 'icp_' + model_name + '.csv'
-if os.path.exists(summary_path) is not True:
-    os.makedirs(summary_path)
-if os.path.exists(summary_file) is True:
-    os.remove(summary_file)
-
-df_summary.to_csv(summary_file)
-print(df_summary)
+#     result = [force_value]
+#     if index == 0:
+#         result_summary = result
+#     else:
+#         result_summary = np.vstack((result_summary, result))
+#     print('\nICP_Force')
+#     if np.unique(y_test).shape[0] == 10:
+#         print('True')
+#     else:
+#         print('Warning!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+#     print('Accuracy: {}'.format(result[0]))
+#
+# df_summary = pd.DataFrame(result_summary, columns=['Accuracy'])
+#
+# summary_path = path + '/summary/icp/lda_force/'
+# summary_file = summary_path + 'icp_' + model_name + '.csv'
+# if os.path.exists(summary_path) is not True:
+#     os.makedirs(summary_path)
+# if os.path.exists(summary_file) is True:
+#     os.remove(summary_file)
+#
+# df_summary.to_csv(summary_file)
+# print(df_summary)
 

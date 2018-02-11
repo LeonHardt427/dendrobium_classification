@@ -3,11 +3,14 @@
 # @Author  : LeonHardt
 # @File    : acp_classification.py
 
-
+import os
 import numpy as np
 import pandas as pd
 
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.svm import SVC
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.datasets import load_iris
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split , StratifiedKFold
@@ -19,13 +22,14 @@ from nonconformist.acp import AggregatedCp
 from nonconformist.acp import BootstrapSampler, CrossSampler, RandomSubSampler
 from nonconformist.acp import BootstrapConformalClassifier
 from nonconformist.acp import CrossConformalClassifier
+from force_value import force_mean_errors
 from nonconformist.evaluation import class_mean_errors, class_avg_c, class_empty
 
 # -----------------------------------------------------------------------------
 # Experiment setup
 # -----------------------------------------------------------------------------
 # data = load_iris()
-
+path = os.getcwd()
 X = np.loadtxt('x_sample.csv', delimiter=',')
 y = np.loadtxt('y_label.csv', delimiter=',', dtype='int8')
 
@@ -35,8 +39,11 @@ X = sc.fit_transform(X)
 
 columns = ['C-{}'.format(i) for i in np.unique(y)] + ['truth']
 significance = 0.45
-classification_method = DecisionTreeClassifier()
-file_name = 'decision_tree.xls'
+classification_method = SVC(C=40.0, gamma=0.005, kernel='rbf', probability=True)
+file_name = 'dendrobium_svm.xls'
+
+# classification_method = RandomForestClassifier(n_estimators=500, criterion='entropy')
+
 
 ACP_Random = []
 ACP_Cross = []
@@ -69,7 +76,7 @@ models = {  'ACP-RandomSubSampler'  : AggregatedCp(
             'BCP'                   : BootstrapConformalClassifier(
                                         IcpClassifier(
                                             ClassifierNc(
-                                                ClassifierAdapter(classification_method))))
+                                                ClassifierAdapter(classification_method)))),
           }
 
 # ------------------------------------------------------------------------------------------------------------------
@@ -100,31 +107,70 @@ models = {  'ACP-RandomSubSampler'  : AggregatedCp(
 # StratifiedKFold method
 # ------------------------------------------------------------------------------------------------------------------
 
-s_folder = StratifiedKFold(n_splits=10, shuffle=True, random_state=0)
+s_folder = StratifiedKFold(n_splits=10, shuffle=True, random_state=1)
 summary = []
+summary_acc = []
+time = 1
 for train_index, test_index in s_folder.split(X, y):
+    print('the ' + str(time) + 'time:')
     x_train, x_test = X[train_index], X[test_index]
     y_train, y_test = y[train_index], y[test_index]
     truth = y_test.reshape(-1, 1)
 
+    lda = LinearDiscriminantAnalysis(n_components=9)
+    x_train_lda = lda.fit_transform(x_train, y_train)
+    x_test_lda = lda.transform(x_test)
+    result = []
     for name, model in models.items():
-        result = []
-        model.fit(x_train, y_train)
-        prediction = model.predict(x_test, significance=None)
+        print(name + ' is predicting')
+        model.fit(x_train_lda, y_train)
+        prediction = model.predict(x_test_lda, significance=None)
         table = np.hstack((prediction, truth))
-        df = pd.DataFrame(table, columns=columns)
-        print('\n{}'.format(name))
-        print('Error rate: {}'.format(class_mean_errors(prediction, truth, significance)))
-        print('class average count: {}'.format(class_avg_c(prediction, truth, significance)))
-        result = [name,
-                  class_mean_errors(prediction, truth, significance),
-                  class_avg_c(prediction, truth, significance),
-                  class_empty(prediction, truth, significance)]
+        accuracy = 1 - force_mean_errors(prediction, y_test)
 
-        if len(summary) == 0:
-            summary = result
-        else:
-            summary = np.vstack((summary, result))
+        # df = pd.DataFrame(table, columns=columns)
+        # print('\n{}'.format(name))
+        # print('Error rate: {}'.format(class_mean_errors(prediction, truth, significance)))
+        # print('class average count: {}'.format(class_avg_c(prediction, truth, significance)))
+        # result = [name,
+        #           class_mean_errors(prediction, truth, significance),
+        #           class_avg_c(prediction, truth, significance),
+        #           class_empty(prediction, truth, significance)]
+
+        # if len(summary) == 0:
+        #     summary = result
+        # else:
+        #     summary = np.vstack((summary, result))
+
+        summary_acc.append(accuracy)
+        if name == 'ACP-RandomSubSampler':
+                ACP_Random.append(accuracy)
+        elif name == 'ACP-CrossSampler':
+                ACP_Cross.append(accuracy)
+        elif name == 'ACP-BootstrapSampler':
+                ACP_Boot.append(accuracy)
+        elif name == 'CCP':
+                CCP.append(accuracy)
+        elif name == 'BCP':
+                BCP.append(accuracy)
+    time += 1
+
+
+print('ACP_Random: ' + str(np.mean(ACP_Random)))
+print('ACP-Cross: ' + str(np.mean(ACP_Cross)))
+print('ACP-Boot: ' + str(np.mean(ACP_Boot)))
+print('CCP: ' + str(np.mean(CCP)))
+print('BCP: ' + str(np.mean(BCP)))
+save_path = path + '/acp_RF/'
+if os.path.exists(save_path) is not True:
+    os.makedirs(save_path)
+np.savetxt(save_path+'/acp-ran.txt', ACP_Random, delimiter=',')
+np.savetxt(save_path+'/acp-cro.txt', ACP_Cross, delimiter=',')
+np.savetxt(save_path+'/acp-boot.txt', ACP_Boot, delimiter=',')
+np.savetxt(save_path+'/ccp.txt', CCP, delimiter=',')
+np.savetxt(save_path+'/bcp.txt', BCP, delimiter=',')
+
+
 
 
         # if name == 'ACP-RandomSubSampler':
@@ -153,8 +199,8 @@ for train_index, test_index in s_folder.split(X, y):
         #     else:
         #         BCP = np.vstack((BCP, result))
 
-df_result = pd.DataFrame(summary, columns=['name', 'class_mean_errors', 'class_avg_c', 'class_empty'])
-df_result.to_excel(file_name, sheet_name='Sheet1')
+# df_result = pd.DataFrame(summary, columns=['name', 'class_mean_errors', 'class_avg_c', 'class_empty'])
+# df_result.to_excel(file_name, sheet_name='Sheet1')
 
 
 
