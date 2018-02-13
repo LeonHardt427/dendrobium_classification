@@ -11,22 +11,30 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split, StratifiedKFold
 
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 
 from nonconformist.base import ClassifierAdapter
 from nonconformist.cp import IcpClassifier
 from nonconformist.nc import NcFactory, ClassifierNc
+from nonconformist.acp import AggregatedCp
+from nonconformist.acp import BootstrapSampler, CrossSampler, RandomSubSampler
+from nonconformist.acp import BootstrapConformalClassifier
+from nonconformist.acp import CrossConformalClassifier
+
 from nonconformist.evaluation import class_avg_c, class_mean_errors
 from nonconformist.acp import BootstrapConformalClassifier
 from force_value import force_mean_errors
+
 # ----------------------------------------
 # preprocessing
 # -----------------------------------------
 path = os.getcwd()
 
-X = np.loadtxt('ginseng_x_sample.txt', delimiter=',')
-y = np.loadtxt('ginseng_y_label.txt', delimiter=',')
+X = np.loadtxt('x_sample.csv', delimiter=',')
+y = np.loadtxt('y_label.csv', delimiter=',')
 
 sc = StandardScaler()
 X = sc.fit_transform(X)
@@ -37,35 +45,64 @@ X = sc.fit_transform(X)
 
 summary = []
 
-
 # simple_model = KNeighborsClassifier(n_neighbors=3)
 # model_name = '3NN'
+#
+# simple_model = RandomForestClassifier(n_estimators=500, criterion='entropy')
+# model_name = "RF(500)"
 
-simple_model = KNeighborsClassifier(n_neighbors=1)
-model_name = '1NN'
+# simple_model = KNeighborsClassifier(n_neighbors=1)
+# model_name = '1NN'
 
-# simple_model = SVC(C=40.0, gamma=0.005, probability=True)
-# model_name = "SVM"
+simple_model = SVC(C=6000.0, gamma=0.001, probability=True)
+model_name = "SVM(6000,0.001)"
 
-# simple_model = DecisionTreeClassifier(max_depth=12)
-# model_name = "Tree"
-framework_name = 'CP'
-# ------------------------------------------------------------------------------
-# prediction with significance
+# -----------------------------------------------------------------------------
+# Define models
+# -----------------------------------------------------------------------------
 
+models = {  'ACP-RandomSubSampler'  : AggregatedCp(
+                                        IcpClassifier(
+                                            ClassifierNc(
+                                                ClassifierAdapter(simple_model))),
+                                        RandomSubSampler()),
+            'ACP-CrossSampler'      : AggregatedCp(
+                                        IcpClassifier(
+                                            ClassifierNc(
+                                                ClassifierAdapter(simple_model))),
+                                        CrossSampler()),
+            'ACP-BootstrapSampler'  : AggregatedCp(
+                                        IcpClassifier(
+                                            ClassifierNc(
+                                                ClassifierAdapter(simple_model))),
+                                        BootstrapSampler()),
+            'CCP'                   : CrossConformalClassifier(
+                                        IcpClassifier(
+                                            ClassifierNc(
+                                                ClassifierAdapter(simple_model)))),
+            'BCP'                   : BootstrapConformalClassifier(
+                                        IcpClassifier(
+                                            ClassifierNc(
+                                                ClassifierAdapter(simple_model)))),
+          }
 error_summary = []
-for sig in np.arange(0, 1.0001, 0.005):
-    print('sig = ' + str(sig))
-    s_folder = StratifiedKFold(n_splits=10, shuffle=True, random_state=1)
-    for k, (train, test) in enumerate(s_folder.split(X, y)):
+s_folder = StratifiedKFold(n_splits=10, shuffle=True, random_state=1)
+for framework_name, model in models.items():
+    print(framework_name + ' is starting:')
+    for num, (train, test) in enumerate(s_folder.split(X, y)):
         x_train, x_test = X[train], X[test]
         y_train, y_test = y[train], y[test]
         truth = y_test.reshape((-1, 1))
-        # -----------------------------------------------
-        # BCP
-        # conformal_model = BootstrapConformalClassifier(IcpClassifier(ClassifierNc(ClassifierAdapter(simple_model))),
-        #                                                n_models=10)
-        # conformal_model.fit(x_train, y_train)
+
+        lda = LinearDiscriminantAnalysis(n_components=5)
+        x_train_lda = lda.fit_transform(x_train, y_train)
+        x_test_lda = lda.transform(x_test)
+
+        model.fit(x_train_lda, y_train)
+        prediction = model.predict(x_test_lda, significance=None)
+
+        for sig in np.arange(0, 1.0001, 0.005):
+            print(framework_name + ': sig = ' + str(sig))
 
         # ------------------------------------------
         # ICP
@@ -75,44 +112,25 @@ for sig in np.arange(0, 1.0001, 0.005):
         # conformal_model = IcpClassifier(nc)
         # conformal_model.fit(x_train_sp, y_train_sp)
         # conformal_model.calibrate(x_cal, y_cal)
+        # table = np.hstack((prediction, truth))
 
-        # ---------------------------------------------------
-        # CP
-        nc = NcFactory.create_nc(model=simple_model)
-        conformal_model = IcpClassifier(nc)
-        conformal_model.fit(x_train, y_train)
-        conformal_model.calibrate(x_train, y_train)
+            result = [sig, class_mean_errors(prediction, truth, significance=sig),
+                      class_avg_c(prediction, truth, significance=sig)]
+            if sig == 0:
+                summary = result
+            else:
+                summary = np.vstack((summary, result))
 
-        prediction = conformal_model.predict(x_test, significance=None)
-        table = np.hstack((prediction, truth))
-        result = [class_mean_errors(prediction, truth, significance=sig),
-                  class_avg_c(prediction, truth, significance=sig)]
-        if k == 0:
-            summary = result
-        else:
-            summary = np.vstack((summary, result))
-        # print('\nBCP')
-        # print('Accuracy: {}'.format(result[0]))
-        # print('Average count: {}'.format(result[1]))
+        df_summary = pd.DataFrame(summary, columns=['sig', 'Accuracy', 'Average_count'])
 
-    df_summary = pd.DataFrame(summary, columns=['Accuracy', 'Average_count'])
-    temp = [sig, df_summary['Accuracy'].mean()]
+        save_path = os.getcwd() + '/summary/' + model_name + '/' + framework_name + '/'
+        if os.path.exists(save_path) is not True:
+            os.makedirs(save_path)
+        save_file = save_path + framework_name + '_' + str(num) + '.csv'
+        if os.path.exists(save_file):
+            os.remove(save_file)
+        df_summary.to_csv(save_file)
 
-    if sig == 0:
-        error_summary = temp
-        print(error_summary)
-        print(len(error_summary))
-    else:
-        error_summary = np.vstack((error_summary, temp))
-
-save_path = os.getcwd()+'/summary/' + model_name+'/'
-if os.path.exists(save_path) is not True:
-    os.makedirs(save_path)
-
-save_file = save_path + 'significance_error_'+model_name +'_'+framework_name+'.txt'
-if os.path.exists(save_file):
-    os.remove(save_file)
-np.savetxt(save_file, error_summary, delimiter=',')
     # print(df_summary)
     # print(df_summary['Accuracy'].mean())
     # print(type(df_summary['Accuracy'].mean()))

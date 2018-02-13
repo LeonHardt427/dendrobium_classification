@@ -13,10 +13,16 @@ from sklearn.model_selection import train_test_split, StratifiedKFold
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
 
 from nonconformist.base import ClassifierAdapter
 from nonconformist.cp import IcpClassifier
 from nonconformist.nc import NcFactory, ClassifierNc
+from nonconformist.acp import AggregatedCp
+from nonconformist.acp import BootstrapSampler, CrossSampler, RandomSubSampler
+from nonconformist.acp import BootstrapConformalClassifier
+from nonconformist.acp import CrossConformalClassifier
+
 from nonconformist.evaluation import class_avg_c, class_mean_errors
 from nonconformist.acp import BootstrapConformalClassifier
 from force_value import force_mean_errors
@@ -40,8 +46,8 @@ summary = []
 
 # simple_model = KNeighborsClassifier(n_neighbors=3)
 # model_name = '3NN'
-
-simple_model = DecisionTreeClassifier(max_depth=8)
+#
+simple_model = RandomForestClassifier(n_estimators=50, criterion='entropy')
 model_name = "Tree"
 
 # simple_model = KNeighborsClassifier(n_neighbors=1)
@@ -49,6 +55,36 @@ model_name = "Tree"
 
 # simple_model = SVC(C=40.0, gamma=0.005, probability=True)
 # model_name = "SVM"
+
+# -----------------------------------------------------------------------------
+# Define models
+# -----------------------------------------------------------------------------
+
+models = {  'ACP-RandomSubSampler'  : AggregatedCp(
+                                        IcpClassifier(
+                                            ClassifierNc(
+                                                ClassifierAdapter(simple_model))),
+                                        RandomSubSampler()),
+            'ACP-CrossSampler'      : AggregatedCp(
+                                        IcpClassifier(
+                                            ClassifierNc(
+                                                ClassifierAdapter(simple_model))),
+                                        CrossSampler()),
+            'ACP-BootstrapSampler'  : AggregatedCp(
+                                        IcpClassifier(
+                                            ClassifierNc(
+                                                ClassifierAdapter(simple_model))),
+                                        BootstrapSampler()),
+            'CCP'                   : CrossConformalClassifier(
+                                        IcpClassifier(
+                                            ClassifierNc(
+                                                ClassifierAdapter(simple_model)))),
+            'BCP'                   : BootstrapConformalClassifier(
+                                        IcpClassifier(
+                                            ClassifierNc(
+                                                ClassifierAdapter(simple_model)))),
+          }
+
 framework_name = 'BCP'
 
 error_summary = []
@@ -68,6 +104,7 @@ for index, (train, test) in enumerate(s_folder.split(X, y)):
     truth = y_test.reshape((-1, 1))
     # -----------------------------------------------
     # BCP
+
     conformal_model = BootstrapConformalClassifier(IcpClassifier(ClassifierNc(ClassifierAdapter(simple_model))),
                                                    n_models=10)
     conformal_model.fit(x_train, y_train)
