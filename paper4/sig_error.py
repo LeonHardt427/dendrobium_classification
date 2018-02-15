@@ -1,7 +1,8 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @Time    : 2018/1/17 14:49
+# @Time    : 2018/2/14 上午10:21
 # @Author  : LeonHardt
-# @File    : significance_error_knn.py
+# @File    : sig_error.py
 
 import os
 import numpy as np
@@ -181,9 +182,3 @@ for framework_name, model in models.items():
 #
 #
 # df_summary.to_csv(summary_file)
-
-
-
-
-
-
