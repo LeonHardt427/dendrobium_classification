@@ -44,7 +44,7 @@ def calibration_plot(file_path, save_path, save_option=1):
     ax = [ax1, ax2, ax3, ax4, ax5]
     file_list = glob.glob(file_path)
     for k, file in enumerate(file_list):
-        name = file.split('/')[-1].split('.')[0]
+        name = file.split('\\')[-1].split('.')[0]
         ax_temp = ax[k]
         data = np.loadtxt(file, delimiter=',')
 
@@ -63,9 +63,9 @@ def calibration_plot(file_path, save_path, save_option=1):
         fig.savefig(save_path)
 
 if __name__ == '__main__':
-    method = 'simple_test'
-    # path = os.getcwd()+'/calibration/'+method+'/*.txt'
-    path = os.getcwd() + '/simple_test/data/*.txt'
+    method = 'SVM(6000,0.001)'
+    path = os.getcwd()+'/calibration/'+method+'/*.txt'
+    # path = os.getcwd() + '/simple_test/data/*.txt'
     save_path = os.getcwd() + '/calibration_plot/'
     if os.path.exists(save_path) is not True:
         os.makedirs(save_path)
