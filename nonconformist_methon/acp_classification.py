@@ -30,8 +30,8 @@ from nonconformist.evaluation import class_mean_errors, class_avg_c, class_empty
 # -----------------------------------------------------------------------------
 # data = load_iris()
 path = os.getcwd()
-X = np.loadtxt('x_sample.csv', delimiter=',')
-y = np.loadtxt('y_label.csv', delimiter=',', dtype='int8')
+X = np.loadtxt('x_time_sample_F1000toT338.csv', delimiter=',')
+y = np.loadtxt('y_time_label_F1000toT338.csv', delimiter=',', dtype='int8')
 
 sc = StandardScaler()
 
@@ -39,7 +39,7 @@ X = sc.fit_transform(X)
 
 columns = ['C-{}'.format(i) for i in np.unique(y)] + ['truth']
 significance = 0.45
-classification_method = SVC(C=40.0, gamma=0.005, kernel='rbf', probability=True)
+classification_method = SVC(C=60.0, gamma=0.001, kernel='rbf', probability=True)
 file_name = 'dendrobium_svm.xls'
 
 # classification_method = RandomForestClassifier(n_estimators=500, criterion='entropy')
@@ -117,14 +117,14 @@ for train_index, test_index in s_folder.split(X, y):
     y_train, y_test = y[train_index], y[test_index]
     truth = y_test.reshape(-1, 1)
 
-    lda = LinearDiscriminantAnalysis(n_components=9)
-    x_train_lda = lda.fit_transform(x_train, y_train)
-    x_test_lda = lda.transform(x_test)
+    # lda = LinearDiscriminantAnalysis(n_components=9)
+    # x_train_lda = lda.fit_transform(x_train, y_train)
+    # x_test_lda = lda.transform(x_test)
     result = []
     for name, model in models.items():
         print(name + ' is predicting')
-        model.fit(x_train_lda, y_train)
-        prediction = model.predict(x_test_lda, significance=None)
+        model.fit(x_train, y_train)
+        prediction = model.predict(x_test, significance=None)
         table = np.hstack((prediction, truth))
         accuracy = 1 - force_mean_errors(prediction, y_test)
 
@@ -161,7 +161,7 @@ print('ACP-Cross: ' + str(np.mean(ACP_Cross)))
 print('ACP-Boot: ' + str(np.mean(ACP_Boot)))
 print('CCP: ' + str(np.mean(CCP)))
 print('BCP: ' + str(np.mean(BCP)))
-save_path = path + '/acp_RF/'
+save_path = path + '/time/acp_svm/'
 if os.path.exists(save_path) is not True:
     os.makedirs(save_path)
 np.savetxt(save_path+'/acp-ran.txt', ACP_Random, delimiter=',')
@@ -170,6 +170,75 @@ np.savetxt(save_path+'/acp-boot.txt', ACP_Boot, delimiter=',')
 np.savetxt(save_path+'/ccp.txt', CCP, delimiter=',')
 np.savetxt(save_path+'/bcp.txt', BCP, delimiter=',')
 
+
+
+# ------------------------------------------------------------------------------------------------------------------
+# StratifiedKFold method_lda
+# ------------------------------------------------------------------------------------------------------------------
+#
+# s_folder = StratifiedKFold(n_splits=10, shuffle=True, random_state=1)
+# summary = []
+# summary_acc = []
+# time = 1
+# for train_index, test_index in s_folder.split(X, y):
+#     print('the ' + str(time) + 'time:')
+#     x_train, x_test = X[train_index], X[test_index]
+#     y_train, y_test = y[train_index], y[test_index]
+#     truth = y_test.reshape(-1, 1)
+#
+#     lda = LinearDiscriminantAnalysis(n_components=9)
+#     x_train_lda = lda.fit_transform(x_train, y_train)
+#     x_test_lda = lda.transform(x_test)
+#     result = []
+#     for name, model in models.items():
+#         print(name + ' is predicting')
+#         model.fit(x_train_lda, y_train)
+#         prediction = model.predict(x_test_lda, significance=None)
+#         table = np.hstack((prediction, truth))
+#         accuracy = 1 - force_mean_errors(prediction, y_test)
+#
+#         # df = pd.DataFrame(table, columns=columns)
+#         # print('\n{}'.format(name))
+#         # print('Error rate: {}'.format(class_mean_errors(prediction, truth, significance)))
+#         # print('class average count: {}'.format(class_avg_c(prediction, truth, significance)))
+#         # result = [name,
+#         #           class_mean_errors(prediction, truth, significance),
+#         #           class_avg_c(prediction, truth, significance),
+#         #           class_empty(prediction, truth, significance)]
+#
+#         # if len(summary) == 0:
+#         #     summary = result
+#         # else:
+#         #     summary = np.vstack((summary, result))
+#
+#         summary_acc.append(accuracy)
+#         if name == 'ACP-RandomSubSampler':
+#                 ACP_Random.append(accuracy)
+#         elif name == 'ACP-CrossSampler':
+#                 ACP_Cross.append(accuracy)
+#         elif name == 'ACP-BootstrapSampler':
+#                 ACP_Boot.append(accuracy)
+#         elif name == 'CCP':
+#                 CCP.append(accuracy)
+#         elif name == 'BCP':
+#                 BCP.append(accuracy)
+#     time += 1
+#
+#
+# print('ACP_Random: ' + str(np.mean(ACP_Random)))
+# print('ACP-Cross: ' + str(np.mean(ACP_Cross)))
+# print('ACP-Boot: ' + str(np.mean(ACP_Boot)))
+# print('CCP: ' + str(np.mean(CCP)))
+# print('BCP: ' + str(np.mean(BCP)))
+# save_path = path + '/acp_RF/'
+# if os.path.exists(save_path) is not True:
+#     os.makedirs(save_path)
+# np.savetxt(save_path+'/acp-ran.txt', ACP_Random, delimiter=',')
+# np.savetxt(save_path+'/acp-cro.txt', ACP_Cross, delimiter=',')
+# np.savetxt(save_path+'/acp-boot.txt', ACP_Boot, delimiter=',')
+# np.savetxt(save_path+'/ccp.txt', CCP, delimiter=',')
+# np.savetxt(save_path+'/bcp.txt', BCP, delimiter=',')
+#
 
 
 

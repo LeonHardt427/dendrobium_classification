@@ -32,8 +32,8 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier
 
-X = np.loadtxt('x_sample.csv', delimiter=',')
-y = np.loadtxt('y_label.csv', delimiter=',', dtype='int8')
+X = np.loadtxt('x_time_sample_F1000toT338.csv', delimiter=',')
+y = np.loadtxt('y_time_label_F1000toT338.csv', delimiter=',', dtype='int8')
 
 K_fold = StratifiedKFold(n_splits=10, random_state=1)
 
@@ -86,7 +86,7 @@ K_fold = StratifiedKFold(n_splits=10, random_state=1)
 """
 Method 4: Support Vector machine (rbf kernel)
 """
-pipe_svm_rbf = Pipeline([('scl', StandardScaler()), ('svm_rbf', SVC(kernel='rbf', C=1.0, gamma=0.2))])
+pipe_svm_rbf = Pipeline([('scl', StandardScaler()), ('svm_rbf', SVC(kernel='rbf', C=60.0, gamma=0.001))])
 svm_rbf_score = []
 fold_times = 1
 for train_index, test_index in K_fold.split(X, y):
@@ -116,7 +116,7 @@ print('SVM_RBF CV accuracy: %s +/- %s' % (svm_rbf_score_cv[0], svm_rbf_score_cv[
 """
 Method 6: Random Forest
 """
-pipe_forest = Pipeline([('scl', StandardScaler()), ('forest', RandomForestClassifier(criterion='entropy', max_depth=8))])
+pipe_forest = Pipeline([('scl', StandardScaler()), ('forest', RandomForestClassifier(criterion='entropy', max_depth=500))])
 forest_score = []
 fold_times = 1
 for train_index, test_index in K_fold.split(X, y):

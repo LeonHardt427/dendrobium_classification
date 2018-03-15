@@ -36,16 +36,18 @@ def calibration_data(file_path, save_path):
     np.savetxt(save_path, calibration_mean, delimiter=',')
     print(calibration_mean)
 
+
 if __name__ == '__main__':
     names = ['ACP-RandomSubSampler', 'ACP-CrossSampler', 'ACP-BootstrapSampler', 'CCP', 'BCP']
-    methods = ['RF', 'RF(500)', 'SVM(40,0.05)', 'SVM(1000,0.05)', 'SVM(6000,0.001)']
+    # methods = ['RF', 'RF(500)', 'SVM(40,0.05)', 'SVM(1000,0.05)', 'SVM(6000,0.001)']
+    methods = ['SVM(6000,0.001)']
     # names = ['ACP-BootstrapSampler']
-    save_path = os.getcwd() + '/calibration/'
+    save_path = os.getcwd() + '/calibration/time/'
     for method in methods:
         for name in names:
             print(name)
-            path = os.getcwd() + '/summary/' + method + '/' + name + '/*.txt'
-            save_path = os.getcwd() + '/calibration/' + method + '/'
+            path = os.getcwd() + '/summary/time/' + method + '/' + name + '/*.csv'
+            save_path = os.getcwd() + '/calibration/time/' + method + '/'
             if os.path.exists(save_path) is not True:
                 os.makedirs(save_path)
             save_file = save_path + name + '.txt'

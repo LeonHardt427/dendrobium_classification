@@ -107,19 +107,19 @@ def calibration_plot_simple(file_path, save_path, save_option=1):
 if __name__ == '__main__':
 
     # all the plot for one method ----------------------------------
-    # method = 'SVM(6000,0.001)'
-    # path = os.getcwd()+'/calibration/'+method+'/*.txt'
-    # # path = os.getcwd() + '/simple_test/data/*.txt'
-    # save_path = os.getcwd() + '/calibration_plot/'
-    # if os.path.exists(save_path) is not True:
-    #     os.makedirs(save_path)
-    # save_file = save_path+method+'.png'
-    # calibration_plot_all(path, save_file, save_option=0)
-
-    # simple plot for one method ----------------------------------
-    path = os.getcwd()+'/paper_plot/*.txt'
+    method = 'SVM(6000,0.001)'
+    path = os.getcwd()+'/calibration/time/'+method+'/*.txt'
+    # path = os.getcwd() + '/simple_test/data/*.txt'
     save_path = os.getcwd() + '/calibration_plot/'
     if os.path.exists(save_path) is not True:
         os.makedirs(save_path)
-    save_file = save_path+'ACP.png'
-    calibration_plot_simple(path, save_file, save_option=0)
+    save_file = save_path+method+'.png'
+    calibration_plot_all(path, save_file, save_option=0)
+
+    # simple plot for one method ----------------------------------
+    # path = os.getcwd()+'/paper_plot/*.txt'
+    # save_path = os.getcwd() + '/calibration_plot/'
+    # if os.path.exists(save_path) is not True:
+    #     os.makedirs(save_path)
+    # save_file = save_path+'ACP.png'
+    # calibration_plot_simple(path, save_file, save_option=0)
