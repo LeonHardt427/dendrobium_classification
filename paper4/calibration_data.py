@@ -41,13 +41,15 @@ if __name__ == '__main__':
     names = ['ACP-RandomSubSampler', 'ACP-CrossSampler', 'ACP-BootstrapSampler', 'CCP', 'BCP']
     # methods = ['RF', 'RF(500)', 'SVM(40,0.05)', 'SVM(1000,0.05)', 'SVM(6000,0.001)']
     # methods = ['SVM(6000,0.001)']
-    methods = ['SVM(6000,0.001)']
+    methods = ['ICP_SVM(60,0.001)']
     # names = ['ACP-BootstrapSampler']
     save_path = os.getcwd() + '/calibration/time/'
     for method in methods:
         for name in names:
             print(name)
-            path = os.getcwd() + '/summary/time/' + method + '/' + name + '/*.csv'
+            # path = os.getcwd() + '/summary/time/' + method + '/' + name + '/*.csv'    #ACP
+            path = os.getcwd() + '/summary/time/' + method + '/*.csv'                   #ICP
+
             save_path = os.getcwd() + '/calibration/time/' + method + '/'
             if os.path.exists(save_path) is not True:
                 os.makedirs(save_path)

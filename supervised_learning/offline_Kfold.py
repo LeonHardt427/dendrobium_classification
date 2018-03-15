@@ -35,7 +35,7 @@ from sklearn.ensemble import RandomForestClassifier
 X = np.loadtxt('x_time_sample_F1000toT338.csv', delimiter=',')
 y = np.loadtxt('y_time_label_F1000toT338.csv', delimiter=',', dtype='int8')
 
-K_fold = StratifiedKFold(n_splits=10, random_state=1)
+K_fold = StratifiedKFold(n_splits=10, random_state=0)
 
 
 # """
@@ -86,17 +86,17 @@ K_fold = StratifiedKFold(n_splits=10, random_state=1)
 """
 Method 4: Support Vector machine (rbf kernel)
 """
-pipe_svm_rbf = Pipeline([('scl', StandardScaler()), ('svm_rbf', SVC(kernel='rbf', C=60.0, gamma=0.001))])
-svm_rbf_score = []
-fold_times = 1
-for train_index, test_index in K_fold.split(X, y):
-    pipe_svm_rbf.fit(X[train_index], y[train_index])
-    score = pipe_svm_rbf.score(X[test_index], y[test_index])
-    fold_times += 1
-    svm_rbf_score.append(score)
-    # print('SVM_RBF: Fold: %s, Class dist.: %s, Acc: %.3f' % (fold_times, np.bincount(y[train_index]), score))
-svm_rbf_score_cv = [np.mean(svm_rbf_score), np.std(svm_rbf_score)]
-print('SVM_RBF CV accuracy: %s +/- %s' % (svm_rbf_score_cv[0], svm_rbf_score_cv[1]))
+# pipe_svm_rbf = Pipeline([('scl', StandardScaler()), ('svm_rbf', SVC(kernel='rbf', C=60.0, gamma=0.001))])
+# svm_rbf_score = []
+# fold_times = 1
+# for train_index, test_index in K_fold.split(X, y):
+#     pipe_svm_rbf.fit(X[train_index], y[train_index])
+#     score = pipe_svm_rbf.score(X[test_index], y[test_index])
+#     fold_times += 1
+#     svm_rbf_score.append(score)
+#     # print('SVM_RBF: Fold: %s, Class dist.: %s, Acc: %.3f' % (fold_times, np.bincount(y[train_index]), score))
+# svm_rbf_score_cv = [np.mean(svm_rbf_score), np.std(svm_rbf_score)]
+# print('SVM_RBF CV accuracy: %s +/- %s' % (svm_rbf_score_cv[0], svm_rbf_score_cv[1]))
 
 # """
 # Method 5: Decision Tree

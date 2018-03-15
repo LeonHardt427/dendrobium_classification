@@ -49,14 +49,14 @@ summary = []
 # simple_model = KNeighborsClassifier(n_neighbors=3)
 # model_name = '3NN'
 #
-simple_model = RandomForestClassifier(n_estimators=500, criterion='entropy')
-model_name = "RF(500)"
+# simple_model = RandomForestClassifier(n_estimators=500, criterion='entropy')
+# model_name = "RF(500)"
 
 # simple_model = KNeighborsClassifier(n_neighbors=1)
 # model_name = '1NN'
 
-# simple_model = SVC(C=60.0, gamma=0.001, probability=True)
-# model_name = "SVM(6000,0.001)"
+simple_model = SVC(C=60.0, gamma=0.001, probability=True)
+model_name = "SVM(60,0.001)"
 
 # -----------------------------------------------------------------------------
 # Define models
@@ -151,29 +151,38 @@ error_summary = []
 # sig_error_
 # ----------------------------------------------------------------------------
 s_folder = StratifiedKFold(n_splits=10, shuffle=True, random_state=1)
-for framework_name, model in models.items():
-    print(framework_name + ' is starting:')
+# for framework_name, model in models.items():
+#     print(framework_name + ' is starting:')
+for i in range(1):
     for num, (train, test) in enumerate(s_folder.split(X, y)):
         x_train, x_test = X[train], X[test]
         y_train, y_test = y[train], y[test]
         truth = y_test.reshape((-1, 1))
 
-        model.fit(x_train, y_train)
-        prediction = model.predict(x_test, significance=None)
-
-        for sig in np.arange(0, 1.0001, 0.005):
-            print(framework_name + ': sig = ' + str(sig))
+        # ---------------------------------------------------
+        # ACP
+        # --------------------------------------------------
+        # model.fit(x_train, y_train)
+        # prediction = model.predict(x_test, significance=None)
+        #
+        # for sig in np.arange(0, 1.0001, 0.005):
+        #     print(framework_name + ': sig = ' + str(sig))
 
         # ------------------------------------------
         # ICP
-        # x_train_sp, x_cal, y_train_sp, y_cal = train_test_split(x_train, y_train, test_size=0.3, shuffle=True,
-        #                                                         random_state=1)
-        # nc = NcFactory.create_nc(model=simple_model)
-        # conformal_model = IcpClassifier(nc)
-        # conformal_model.fit(x_train_sp, y_train_sp)
-        # conformal_model.calibrate(x_cal, y_cal)
-        # table = np.hstack((prediction, truth))
-        # -----------------------------------------
+        # -------------------------------------------
+        x_train_sp, x_cal, y_train_sp, y_cal = train_test_split(x_train, y_train, test_size=0.3, shuffle=True,
+                                                                random_state=1)
+        nc = NcFactory.create_nc(model=simple_model)
+        conformal_model = IcpClassifier(nc)
+        conformal_model.fit(x_train_sp, y_train_sp)
+        conformal_model.calibrate(x_cal, y_cal)
+        prediction = conformal_model.predict(x_test, significance=None)
+        table = np.hstack((prediction, truth))
+
+        # ---------------------------------------------------------------------------
+        for sig in np.arange(0, 1.0001, 0.005):
+            print('ICP : sig = ' + str(sig))
             result = [sig, class_mean_errors(prediction, truth, significance=sig),
                       class_avg_c(prediction, truth, significance=sig)]
             if sig == 0:
@@ -183,10 +192,12 @@ for framework_name, model in models.items():
 
         df_summary = pd.DataFrame(summary, columns=['sig', 'Accuracy', 'Average_count'])
 
-        save_path = os.getcwd() + '/summary/time/' + model_name + '/' + framework_name + '/'
+        # save_path = os.getcwd() + '/summary/time/' + model_name + '/' + framework_name + '/'
+        save_path = os.getcwd() + '/summary/time/ICP_' + model_name + '/'
         if os.path.exists(save_path) is not True:
             os.makedirs(save_path)
-        save_file = save_path + framework_name + '_' + str(num) + '.csv'
+        # save_file = save_path + framework_name + '_' + str(num) + '.csv'
+        save_file = save_path + '_' + str(num) + '.csv'
         if os.path.exists(save_file):
             os.remove(save_file)
         df_summary.to_csv(save_file)

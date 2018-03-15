@@ -27,8 +27,8 @@ from force_value import force_mean_errors
 
 path = os.getcwd()
 
-X = np.loadtxt('x_sample.csv', delimiter=',')
-y = np.loadtxt('y_label.csv', delimiter=',', dtype='int8')
+X = np.loadtxt('x_time_sample_F1000toT338.csv', delimiter=',')
+y = np.loadtxt('y_time_label_F1000toT338.csv', delimiter=',', dtype='int8')
 
 sc = StandardScaler()
 X = sc.fit_transform(X)
@@ -40,11 +40,11 @@ X = sc.fit_transform(X)
 # select_model
 # -------------------------
 
-# model = SVC(kernel='rbf', C=4000, gamma=0.001, probability=True)
+# model = SVC(kernel='rbf', C=60, gamma=0.001, probability=True)
 # model_name = 'SVM'
 
-# model = RandomForestClassifier(n_estimators=12, criterion='entropy')
-# model_name = 'RandomForest'
+model = RandomForestClassifier(n_estimators=500, criterion='entropy')
+model_name = 'RandomForest'
 
 # model = DecisionTreeClassifier(criterion='entropy', max_depth=6)
 # model_name = 'Tree'
@@ -52,8 +52,8 @@ X = sc.fit_transform(X)
 # model = KNeighborsClassifier(n_neighbors=3)
 # model_name = '3NN'
 
-model = KNeighborsClassifier(n_neighbors=1)
-model_name = '1NN'
+# model = KNeighborsClassifier(n_neighbors=1)
+# model_name = '1NN'
 # -------------------------
 
 significance = 0.5
@@ -125,16 +125,17 @@ for index, (train, test) in enumerate(s_folder.split(X, y)):
 
 df_summary = pd.DataFrame(result_summary, columns=['Accuracy'])
 
-summary_path = path + '/summary/icp/force/'
+summary_path = path + '/summary/icp_time/force/'
 summary_file = summary_path + 'icp_' + model_name + '.csv'
 if os.path.exists(summary_path) is not True:
     os.makedirs(summary_path)
 if os.path.exists(summary_file) is True:
     os.remove(summary_file)
 
-
 df_summary.to_csv(summary_file)
 print(df_summary)
+print("Accuracy_mean is ")
+print(df_summary.mean())
 
 
 

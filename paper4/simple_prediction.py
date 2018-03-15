@@ -41,18 +41,18 @@ for index, (train, test) in enumerate(s_folder.split(X, y)):
     x_train, x_test = X[train], X[test]
     y_train, y_test = y[train], y[test]
 
-    lda = LinearDiscriminantAnalysis(n_components=5)
-    x_train_lda = lda.fit_transform(x_train, y_train)
-    x_test_lda = lda.transform(x_test)
+    # lda = LinearDiscriminantAnalysis(n_components=5)
+    # x_train_lda = lda.fit_transform(x_train, y_train)
+    # x_test_lda = lda.transform(x_test)
 
     rf = RandomForestClassifier(n_estimators=500, criterion='entropy')
     svm = SVC(C=60.0, gamma=0.001, probability=True)
 
-    rf.fit(x_train_lda, y_train)
-    svm.fit(x_train_lda, y_train)
+    rf.fit(x_train, y_train)
+    svm.fit(x_train, y_train)
 
-    rf_prediction = rf.predict(x_test_lda)
-    svm_prediciton = svm.predict(x_test_lda)
+    rf_prediction = rf.predict(x_test)
+    svm_prediciton = svm.predict(x_test)
 
     rf_accuracy = accuracy_score(y_test, rf_prediction)
     svm_accuracy = accuracy_score(y_test, svm_prediciton)

@@ -39,8 +39,9 @@ X = sc.fit_transform(X)
 
 columns = ['C-{}'.format(i) for i in np.unique(y)] + ['truth']
 significance = 0.45
-classification_method = SVC(C=60.0, gamma=0.001, kernel='rbf', probability=True)
-file_name = 'dendrobium_svm.xls'
+# classification_method = SVC(C=60.0, gamma=0.001, kernel='rbf', probability=True)
+classification_method = RandomForestClassifier(n_estimators=500, criterion='entropy')
+file_name = 'dendrobium_RF(500).xls'
 
 # classification_method = RandomForestClassifier(n_estimators=500, criterion='entropy')
 
