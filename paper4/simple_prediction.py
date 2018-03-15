@@ -23,8 +23,8 @@ from sklearn.svm import SVC
 # preprocessing
 # -----------------------------
 
-X = np.loadtxt('x_sample.csv', delimiter=',')
-y = np.loadtxt('y_label.csv', delimiter=',')
+X = np.loadtxt('x_time_sample_F1000toT338.csv', delimiter=',')
+y = np.loadtxt('y_time_label_F1000toT338.csv', delimiter=',')
 
 sc = StandardScaler()
 X = sc.fit_transform(X)
@@ -45,8 +45,8 @@ for index, (train, test) in enumerate(s_folder.split(X, y)):
     x_train_lda = lda.fit_transform(x_train, y_train)
     x_test_lda = lda.transform(x_test)
 
-    rf = RandomForestClassifier(n_estimators=50, criterion='entropy')
-    svm = SVC(C=6000.0, gamma=0.001, probability=True)
+    rf = RandomForestClassifier(n_estimators=500, criterion='entropy')
+    svm = SVC(C=60.0, gamma=0.001, probability=True)
 
     rf.fit(x_train_lda, y_train)
     svm.fit(x_train_lda, y_train)

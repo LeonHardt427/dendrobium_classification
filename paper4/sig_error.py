@@ -34,8 +34,8 @@ from force_value import force_mean_errors
 # -----------------------------------------
 path = os.getcwd()
 
-X = np.loadtxt('x_sample.csv', delimiter=',')
-y = np.loadtxt('y_label.csv', delimiter=',')
+X = np.loadtxt('x_time_sample_F1000toT338.csv', delimiter=',')
+y = np.loadtxt('y_time_label_F1000toT338.csv', delimiter=',')
 
 sc = StandardScaler()
 X = sc.fit_transform(X)
@@ -87,23 +87,23 @@ models = {  'ACP-RandomSubSampler'  : AggregatedCp(
                                                 ClassifierAdapter(simple_model)))),
           }
 error_summary = []
-s_folder = StratifiedKFold(n_splits=10, shuffle=True, random_state=1)
-for framework_name, model in models.items():
-    print(framework_name + ' is starting:')
-    for num, (train, test) in enumerate(s_folder.split(X, y)):
-        x_train, x_test = X[train], X[test]
-        y_train, y_test = y[train], y[test]
-        truth = y_test.reshape((-1, 1))
-
-        lda = LinearDiscriminantAnalysis(n_components=5)
-        x_train_lda = lda.fit_transform(x_train, y_train)
-        x_test_lda = lda.transform(x_test)
-
-        model.fit(x_train_lda, y_train)
-        prediction = model.predict(x_test_lda, significance=None)
-
-        for sig in np.arange(0, 1.0001, 0.005):
-            print(framework_name + ': sig = ' + str(sig))
+# s_folder = StratifiedKFold(n_splits=10, shuffle=True, random_state=1)
+# for framework_name, model in models.items():
+#     print(framework_name + ' is starting:')
+#     for num, (train, test) in enumerate(s_folder.split(X, y)):
+#         x_train, x_test = X[train], X[test]
+#         y_train, y_test = y[train], y[test]
+#         truth = y_test.reshape((-1, 1))
+#
+#         lda = LinearDiscriminantAnalysis(n_components=9)
+#         x_train_lda = lda.fit_transform(x_train, y_train)
+#         x_test_lda = lda.transform(x_test)
+#
+#         model.fit(x_train_lda, y_train)
+#         prediction = model.predict(x_test_lda, significance=None)
+#
+#         for sig in np.arange(0, 1.0001, 0.005):
+#             print(framework_name + ': sig = ' + str(sig))
 
         # ------------------------------------------
         # ICP
@@ -115,22 +115,22 @@ for framework_name, model in models.items():
         # conformal_model.calibrate(x_cal, y_cal)
         # table = np.hstack((prediction, truth))
 
-            result = [sig, class_mean_errors(prediction, truth, significance=sig),
-                      class_avg_c(prediction, truth, significance=sig)]
-            if sig == 0:
-                summary = result
-            else:
-                summary = np.vstack((summary, result))
-
-        df_summary = pd.DataFrame(summary, columns=['sig', 'Accuracy', 'Average_count'])
-
-        save_path = os.getcwd() + '/summary/' + model_name + '/' + framework_name + '/'
-        if os.path.exists(save_path) is not True:
-            os.makedirs(save_path)
-        save_file = save_path + framework_name + '_' + str(num) + '.csv'
-        if os.path.exists(save_file):
-            os.remove(save_file)
-        df_summary.to_csv(save_file)
+        #     result = [sig, class_mean_errors(prediction, truth, significance=sig),
+        #               class_avg_c(prediction, truth, significance=sig)]
+        #     if sig == 0:
+        #         summary = result
+        #     else:
+        #         summary = np.vstack((summary, result))
+        #
+        # df_summary = pd.DataFrame(summary, columns=['sig', 'Accuracy', 'Average_count'])
+        #
+        # save_path = os.getcwd() + '/summary/time/' + model_name + '/' + framework_name + '/'
+        # if os.path.exists(save_path) is not True:
+        #     os.makedirs(save_path)
+        # save_file = save_path + framework_name + '_' + str(num) + '.csv'
+        # if os.path.exists(save_file):
+        #     os.remove(save_file)
+        # df_summary.to_csv(save_file)
 
     # print(df_summary)
     # print(df_summary['Accuracy'].mean())
@@ -146,29 +146,29 @@ for framework_name, model in models.items():
 
 # ------------------------------------------------------------------------------------
 # force_prediction
-# result_summary = []
-# s_folder = StratifiedKFold(n_splits=10, shuffle=True)
-# for index, (train, test) in enumerate(s_folder.split(X, y)):
-#     x_train, x_test = X[train], X[test]
-#     y_train, y_test = y[train], y[test]
-#     truth = y_test.reshape((-1, 1))
-#
-#     model = BootstrapConformalClassifier(IcpClassifier(ClassifierNc(ClassifierAdapter(simple_model))))
-#     model.fit(x_train, y_train)
-#     prediction = model.predict(x_test, significance=None)
-#     table = np.hstack((prediction, truth))
-#     result = [1 - force_mean_errors(prediction, truth)]
-#
-#     if index == 0:
-#         result_summary = result
-#     else:
-#         result_summary = np.vstack((result_summary, result))
-#     print('\nBCP_Force')
-#     if np.unique(y_test).shape[0] == 10:
-#         print('True')
-#     else:
-#         print('Warning!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-#     print('Accuracy: {}'.format(result[0]))
+result_summary = []
+s_folder = StratifiedKFold(n_splits=10, shuffle=True)
+for index, (train, test) in enumerate(s_folder.split(X, y)):
+    x_train, x_test = X[train], X[test]
+    y_train, y_test = y[train], y[test]
+    truth = y_test.reshape((-1, 1))
+
+    model = BootstrapConformalClassifier(IcpClassifier(ClassifierNc(ClassifierAdapter(simple_model))))
+    model.fit(x_train, y_train)
+    prediction = model.predict(x_test, significance=None)
+    table = np.hstack((prediction, truth))
+    result = [1 - force_mean_errors(prediction, truth)]
+
+    if index == 0:
+        result_summary = result
+    else:
+        result_summary = np.vstack((result_summary, result))
+    print('\nBCP_Force')
+    if np.unique(y_test).shape[0] == 10:
+        print('True')
+    else:
+        print('Warning!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    print('Accuracy: {}'.format(result[0]))
 #
 # df_summary = pd.DataFrame(result_summary, columns=['Accuracy'])
 # print(df_summary)

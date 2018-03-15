@@ -26,9 +26,12 @@ from force_value import force_mean_errors
 # ---------------------------------------------
 
 path = os.getcwd()
+#
+# X = np.loadtxt('x_sample.csv', delimiter=',')
+# y = np.loadtxt('y_label.csv', delimiter=',', dtype='int8')
 
-X = np.loadtxt('x_sample.csv', delimiter=',')
-y = np.loadtxt('y_label.csv', delimiter=',', dtype='int8')
+X = np.loadtxt('x_time_sample_F1000toT338.csv', delimiter=',')
+y = np.loadtxt('y_time_label_F1000toT338.csv', delimiter=',', dtype='int8')
 
 sc = StandardScaler()
 X = sc.fit_transform(X)
@@ -43,7 +46,7 @@ X = sc.fit_transform(X)
 # model = SVC(kernel='rbf', C=6000, gamma=0.001, probability=True)
 # model_name = 'SVM'
 
-model = RandomForestClassifier(n_estimators=50, criterion='entropy')
+model = RandomForestClassifier(n_estimators=500, criterion='entropy')
 model_name = 'RandomForest'
 
 # model = DecisionTreeClassifier(criterion='entropy', max_depth=6)
