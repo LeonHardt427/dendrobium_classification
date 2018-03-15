@@ -40,6 +40,7 @@ def calibration_data(file_path, save_path):
 if __name__ == '__main__':
     names = ['ACP-RandomSubSampler', 'ACP-CrossSampler', 'ACP-BootstrapSampler', 'CCP', 'BCP']
     # methods = ['RF', 'RF(500)', 'SVM(40,0.05)', 'SVM(1000,0.05)', 'SVM(6000,0.001)']
+    # methods = ['SVM(6000,0.001)']
     methods = ['SVM(6000,0.001)']
     # names = ['ACP-BootstrapSampler']
     save_path = os.getcwd() + '/calibration/time/'
