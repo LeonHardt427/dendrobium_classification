@@ -33,10 +33,11 @@ def efficiency_data(file_path, save_path):
 
 
 if __name__ == '__main__':
-    methods = ['ACP_RF(500)', 'ACP_SVM(60,0.001)', 'ICP_RF(500)', 'ICP_SVM(60,0.001)']
+    # methods = ['ACP_RF(500)', 'ACP_SVM(60,0.001)', 'ICP_RF(500)', 'ICP_SVM(6000,0.001)']
+    methods = ['ICP_RF(500)', 'ICP_SVM(6000,0.001)']
     for method in methods:
-        path = os.getcwd() + '/summary/time/' + method + '/*.csv'
-        save_path = os.getcwd() + '/efficiency/time/'
+        path = os.getcwd() + '/summary/feature/' + method + '/*.csv'
+        save_path = os.getcwd() + '/efficiency/feature/'
         if os.path.exists(save_path) is not True:
             os.makedirs(save_path)
         save_file = save_path + method + '.txt'

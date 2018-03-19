@@ -107,9 +107,9 @@ def calibration_plot_simple(file_path, save_path, save_option=1):
 if __name__ == '__main__':
 
     # all the plot for one method ----------------------------------
-    method = 'RF(500)'
-    path = os.getcwd()+'/calibration/time/'+method+'/*.txt'
-    # path = os.getcwd() + '/simple_test/data/*.txt'
+    # method = 'RF(500)'
+    # path = os.getcwd()+'/calibration/time/'+method+'/*.txt'
+    path = os.getcwd() + '/simple_test/data/*.txt'
     save_path = os.getcwd() + '/calibration_plot/'
     if os.path.exists(save_path) is not True:
         os.makedirs(save_path)

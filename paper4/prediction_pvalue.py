@@ -1,8 +1,7 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @Time    : 2018/2/14 上午10:21
+# @Time    : 2018/3/18 21:10
 # @Author  : LeonHardt
-# @File    : sig_error.py
+# @File    : prediction_pvalue.py
 
 import os
 import numpy as np
@@ -34,10 +33,10 @@ from force_value import force_mean_errors
 # -----------------------------------------
 path = os.getcwd()
 
-# X = np.loadtxt('x_time_sample_F1000toT338.csv', delimiter=',')
-# y = np.loadtxt('y_time_label_F1000toT338.csv', delimiter=',')
-X = np.loadtxt('x_sample.csv', delimiter=',')
-y = np.loadtxt('y_label.csv', delimiter=',')
+X = np.loadtxt('x_time_sample_F1000toT338.csv', delimiter=',')
+y = np.loadtxt('y_time_label_F1000toT338.csv', delimiter=',')
+# X = np.loadtxt('x_sample.csv', delimiter=',')
+# y = np.loadtxt('y_label.csv', delimiter=',')
 
 sc = StandardScaler()
 X = sc.fit_transform(X)
@@ -45,21 +44,11 @@ X = sc.fit_transform(X)
 # --------------------------------------------
 # prediction
 # --------------------------------------------
-
-summary = []
-
-# simple_model = KNeighborsClassifier(n_neighbors=3)
-# model_name = '3NN'
-#
 simple_model = RandomForestClassifier(n_estimators=500, criterion='entropy')
 model_name = "RF(500)"
 
-# simple_model = KNeighborsClassifier(n_neighbors=1)
-# model_name = '1NN'
-
-# simple_model = SVC(C=6000.0, gamma=0.001, probability=True)
-# model_name = "SVM(6000,0.001)"
-
+# simple_model = SVC(C=60.0, gamma=0.001, probability=True)
+# model_name = "SVM(60,0.001)"
 # -----------------------------------------------------------------------------
 # Define models
 # -----------------------------------------------------------------------------
@@ -88,7 +77,6 @@ models = {  'ACP-RandomSubSampler'  : AggregatedCp(
                                             ClassifierNc(
                                                 ClassifierAdapter(simple_model)))),
           }
-error_summary = []
 
 # -------------------------------------------------------------------------------
 # sig_error_lda
@@ -152,11 +140,14 @@ error_summary = []
 # -------------------------------------------------------------------------------
 # sig_error_
 # ----------------------------------------------------------------------------
+prediction_summary = []
+
 s_folder = StratifiedKFold(n_splits=10, shuffle=True, random_state=1)
-# for framework_name, model in models.items():
-#     print(framework_name + ' is starting:')
-for i in range(1):
+for framework_name, model in models.items():
+    print(framework_name + ' is starting:')
+# for i in range(1):
     for num, (train, test) in enumerate(s_folder.split(X, y)):
+        print('the ' + str(num) + ' time is starting')
         x_train, x_test = X[train], X[test]
         y_train, y_test = y[train], y[test]
         truth = y_test.reshape((-1, 1))
@@ -164,87 +155,30 @@ for i in range(1):
         # ---------------------------------------------------
         # ACP
         # --------------------------------------------------
-        # model.fit(x_train, y_train)
-        # prediction = model.predict(x_test, significance=None)
-        #
-        # for sig in np.arange(0, 1.0001, 0.005):
-        #     print(framework_name + ': sig = ' + str(sig))
+        model.fit(x_train, y_train)
+        prediction = model.predict(x_test, significance=None)
+        table = np.hstack((prediction, truth))
 
         # ------------------------------------------
         # ICP
         # -------------------------------------------
-        x_train_sp, x_cal, y_train_sp, y_cal = train_test_split(x_train, y_train, test_size=0.3, shuffle=True,
-                                                                random_state=1)
-        nc = NcFactory.create_nc(model=simple_model)
-        conformal_model = IcpClassifier(nc)
-        conformal_model.fit(x_train_sp, y_train_sp)
-        conformal_model.calibrate(x_cal, y_cal)
-        prediction = conformal_model.predict(x_test, significance=None)
-        table = np.hstack((prediction, truth))
+        # x_train_sp, x_cal, y_train_sp, y_cal = train_test_split(x_train, y_train, test_size=0.3, shuffle=True,
+        #                                                         random_state=1)
+        # nc = NcFactory.create_nc(model=simple_model)
+        # conformal_model = IcpClassifier(nc)
+        # conformal_model.fit(x_train_sp, y_train_sp)
+        # conformal_model.calibrate(x_cal, y_cal)
+        # prediction = conformal_model.predict(x_test, significance=None)
+        # table = np.hstack((prediction, truth))
 
         # ---------------------------------------------------------------------------
-        for sig in np.arange(0, 1.0001, 0.005):
-            print('ICP : sig = ' + str(sig))
-            result = [sig, class_mean_errors(prediction, truth, significance=sig),
-                      class_avg_c(prediction, truth, significance=sig)]
-            if sig == 0:
-                summary = result
-            else:
-                summary = np.vstack((summary, result))
+        if num == 0:
+            prediction_summary = table
+        else:
+            prediction_summary = np.vstack((prediction_summary, table))
 
-        df_summary = pd.DataFrame(summary, columns=['sig', 'Accuracy', 'Average_count'])
+    save_path = os.getcwd() + '/prediction/ACP_' + model_name + '/'
+    if os.path.exists(save_path) is not True:
+        os.makedirs(save_path)
+    np.savetxt(save_path + '/' + framework_name + '.txt', prediction_summary, delimiter=',')
 
-        # save_path = os.getcwd() + '/summary/time/' + model_name + '/' + framework_name + '/'
-        save_path = os.getcwd() + '/summary/feature/ICP_' + model_name + '/'
-        if os.path.exists(save_path) is not True:
-            os.makedirs(save_path)
-        # save_file = save_path + framework_name + '_' + str(num) + '.csv'
-        save_file = save_path + '_' + str(num) + '.csv'
-        if os.path.exists(save_file):
-            os.remove(save_file)
-        df_summary.to_csv(save_file)
-
-    print(df_summary)
-    print(df_summary['Accuracy'].mean())
-    print(type(df_summary['Accuracy'].mean()))
-
-
-# ------------------------------------------------------------------------------------
-# force_prediction
-# result_summary = []
-# s_folder = StratifiedKFold(n_splits=10, shuffle=True)
-# for index, (train, test) in enumerate(s_folder.split(X, y)):
-#     x_train, x_test = X[train], X[test]
-#     y_train, y_test = y[train], y[test]
-#     truth = y_test.reshape((-1, 1))
-#
-#     model = BootstrapConformalClassifier(IcpClassifier(ClassifierNc(ClassifierAdapter(simple_model))))
-#     model.fit(x_train, y_train)
-#     prediction = model.predict(x_test, significance=None)
-#     table = np.hstack((prediction, truth))
-#     result = [1 - force_mean_errors(prediction, truth)]
-#
-#     if index == 0:
-#         result_summary = result
-#     else:
-#         result_summary = np.vstack((result_summary, result))
-#     print('\nBCP_Force')
-#     if np.unique(y_test).shape[0] == 10:
-#         print('True')
-#     else:
-#         print('Warning!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-#     print('Accuracy: {}'.format(result[0]))
-#
-#
-# df_summary = pd.DataFrame(result_summary, columns=['Accuracy'])
-# print(df_summary)
-# summary_path = path + '/summary/bcp/force/'
-# print(df_summary.mean())
-# summary_file = summary_path + 'bcp_' + model_name + '.csv'
-# if os.path.exists(summary_path) is not True:
-#     os.makedirs(summary_path)
-# if os.path.exists(summary_file) is True:
-#     os.remove(summary_file)
-#
-#
-# df_summary.to_csv(summary_file)
